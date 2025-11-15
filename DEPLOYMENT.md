@@ -217,6 +217,30 @@ NODE_ENV=production
 
 ## Updating the Application
 
+### Quick Update (Recommended)
+
+Use the update script for automated updates:
+
+```bash
+# Download update script to server
+scp update.sh root@your-server-ip:/tmp/
+
+# SSH to server and run update
+ssh root@your-server-ip
+chmod +x /tmp/update.sh
+sudo /tmp/update.sh
+```
+
+The script will:
+- Pull latest changes from GitHub
+- Update dependencies
+- Rebuild React app
+- Restart PM2 process
+
+### Manual Update
+
+If you prefer manual update:
+
 ```bash
 # Pull latest changes from GitHub
 cd /var/www/auction_rammstik
