@@ -90,6 +90,21 @@ function initDatabase() {
     )
   `);
 
+  // Chat messages table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS chat_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      lot_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      username TEXT NOT NULL,
+      avatar TEXT,
+      message TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (lot_id) REFERENCES lots(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+  `);
+
   // Create indexes
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_users_hub_id ON users(hub_user_id);
@@ -97,6 +112,8 @@ function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_lots_ends_at ON lots(ends_at);
     CREATE INDEX IF NOT EXISTS idx_bids_lot_id ON bids(lot_id);
     CREATE INDEX IF NOT EXISTS idx_bids_user_id ON bids(user_id);
+    CREATE INDEX IF NOT EXISTS idx_chat_lot_id ON chat_messages(lot_id);
+    CREATE INDEX IF NOT EXISTS idx_chat_created_at ON chat_messages(created_at);
   `);
 }
 
@@ -179,6 +196,21 @@ export const bidQueries = {
     ORDER BY b.amount DESC, b.created_at ASC
     LIMIT 1
   `)
+};
+
+// Chat message queries
+export const chatQueries = {
+  create: db.prepare(`
+    INSERT INTO chat_messages (lot_id, user_id, username, avatar, message)
+    VALUES (?, ?, ?, ?, ?)
+  `),
+  getByLot: db.prepare(`
+    SELECT * FROM chat_messages
+    WHERE lot_id = ?
+    ORDER BY created_at DESC
+    LIMIT 100
+  `),
+  delete: db.prepare('DELETE FROM chat_messages WHERE id = ?')
 };
 
 export default db;

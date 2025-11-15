@@ -4,7 +4,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import { verifyToken, requireAdmin, socketAuth } from './auth.js';
-import { userQueries, lotQueries, bidQueries } from './database.js';
+import { userQueries, lotQueries, bidQueries, chatQueries } from './database.js';
 
 const app = express();
 const server = createServer(app);
@@ -211,6 +211,25 @@ app.get('/api/lots/:id/bids', (req, res) => {
   } catch (error) {
     console.error('Error fetching bids:', error);
     res.status(500).json({ error: 'Failed to fetch bids' });
+  }
+});
+
+// Get lot chat messages (public)
+app.get('/api/lots/:id/chat', (req, res) => {
+  try {
+    const messages = chatQueries.getByLot.all(req.params.id);
+
+    res.json(messages.reverse().map(m => ({
+      id: m.id,
+      userId: m.user_id,
+      username: m.username,
+      avatar: m.avatar,
+      message: m.message,
+      createdAt: m.created_at
+    })));
+  } catch (error) {
+    console.error('Error fetching chat messages:', error);
+    res.status(500).json({ error: 'Failed to fetch chat messages' });
   }
 });
 
@@ -625,6 +644,52 @@ io.on('connection', (socket) => {
     } catch (error) {
       console.error('Error deleting bid:', error);
       socket.emit('actionRejected', { reason: 'Не удалось удалить ставку' });
+    }
+  });
+
+  // Send chat message
+  socket.on('sendChatMessage', ({ lotId, message }) => {
+    try {
+      if (!message || message.trim().length === 0) {
+        return socket.emit('chatError', { reason: 'Сообщение не может быть пустым' });
+      }
+
+      if (message.length > 500) {
+        return socket.emit('chatError', { reason: 'Сообщение слишком длинное (макс. 500 символов)' });
+      }
+
+      const lot = lotQueries.findById.get(lotId);
+      if (!lot) {
+        return socket.emit('chatError', { reason: 'Лот не найден' });
+      }
+
+      // Get user avatar
+      const avatar = socket.user.discord_avatar || socket.user.google_avatar || null;
+
+      // Save message to database
+      const result = chatQueries.create.run(
+        lotId,
+        socket.user.id,
+        socket.user.username,
+        avatar,
+        message.trim()
+      );
+
+      // Broadcast message to all users viewing this lot
+      const chatMessage = {
+        id: result.lastInsertRowid,
+        lotId,
+        userId: socket.user.id,
+        username: socket.user.username,
+        avatar,
+        message: message.trim(),
+        createdAt: new Date().toISOString()
+      };
+
+      io.emit('newChatMessage', chatMessage);
+    } catch (error) {
+      console.error('Error sending chat message:', error);
+      socket.emit('chatError', { reason: 'Не удалось отправить сообщение' });
     }
   });
 

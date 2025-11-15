@@ -88,6 +88,15 @@ class SocketService {
     this.socket.on('userUpdated', (user) => {
       useAuthStore.getState().updateUser(user);
     });
+
+    // Chat events
+    this.socket.on('newChatMessage', (message) => {
+      this.emit('newChatMessage', message);
+    });
+
+    this.socket.on('chatError', ({ reason }) => {
+      this.emit('chatError', { reason });
+    });
   }
 
   disconnect() {
@@ -103,6 +112,14 @@ class SocketService {
       return;
     }
     this.socket.emit('placeBid', { lotId, amount });
+  }
+
+  sendChatMessage(lotId, message) {
+    if (!this.socket) {
+      console.error('Socket not connected');
+      return;
+    }
+    this.socket.emit('sendChatMessage', { lotId, message });
   }
 
   // Event emitter for components

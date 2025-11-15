@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Confetti from 'react-confetti';
 import useAuctionStore from '../store/auctionStore';
 import socketService from '../services/socket';
 import { playBeep } from '../utils/sound';
+import axios from 'axios';
 import './LotFullscreen.css';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 function LotFullscreen({ lot, onClose }) {
   const [bidAmount, setBidAmount] = useState(0);
@@ -11,6 +14,9 @@ function LotFullscreen({ lot, onClose }) {
   const [showBanner, setShowBanner] = useState(false);
   const [bannerText, setBannerText] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+  const chatEndRef = useRef(null);
   const settings = useAuctionStore(state => state.settings);
   const updatedLot = useAuctionStore(state => state.getLot(lot.id)) || lot;
 
@@ -78,6 +84,45 @@ function LotFullscreen({ lot, onClose }) {
     };
   }, [lot.id, settings]);
 
+  // Load chat messages
+  useEffect(() => {
+    const loadChatMessages = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/lots/${lot.id}/chat`);
+        setChatMessages(response.data);
+      } catch (error) {
+        console.error('Failed to load chat messages:', error);
+      }
+    };
+
+    loadChatMessages();
+  }, [lot.id]);
+
+  // Listen for new chat messages
+  useEffect(() => {
+    const handleNewChatMessage = (message) => {
+      if (message.lotId === lot.id) {
+        setChatMessages(prev => [...prev, message]);
+        // Auto-scroll to bottom
+        setTimeout(() => {
+          chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    };
+
+    const handleChatError = ({ reason }) => {
+      alert(reason);
+    };
+
+    socketService.on('newChatMessage', handleNewChatMessage);
+    socketService.on('chatError', handleChatError);
+
+    return () => {
+      socketService.off('newChatMessage', handleNewChatMessage);
+      socketService.off('chatError', handleChatError);
+    };
+  }, [lot.id]);
+
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-US').format(price);
   };
@@ -93,6 +138,14 @@ function LotFullscreen({ lot, onClose }) {
 
   const handleQuickBid = (multiplier) => {
     setBidAmount(prev => prev + (updatedLot.minStep * multiplier));
+  };
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (chatInput.trim()) {
+      socketService.sendChatMessage(lot.id, chatInput.trim());
+      setChatInput('');
+    }
   };
 
   return (
@@ -214,6 +267,46 @@ function LotFullscreen({ lot, onClose }) {
               <div className="fs-bids-empty">No bids yet. Be the first!</div>
             )}
           </div>
+        </div>
+
+        <div className="fs-chat">
+          <h3>Чат ({chatMessages.length})</h3>
+          <div className="fs-chat-messages">
+            {chatMessages.length > 0 ? (
+              chatMessages.map(msg => (
+                <div key={msg.id} className="fs-chat-message">
+                  {msg.avatar && (
+                    <img src={msg.avatar} alt={msg.username} className="chat-avatar" />
+                  )}
+                  <div className="chat-content">
+                    <div className="chat-header">
+                      <span className="chat-username">{msg.username}</span>
+                      <span className="chat-time">
+                        {new Date(msg.createdAt).toLocaleTimeString()}
+                      </span>
+                    </div>
+                    <div className="chat-text">{msg.message}</div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="fs-chat-empty">Пока нет сообщений. Начните общение!</div>
+            )}
+            <div ref={chatEndRef} />
+          </div>
+          <form onSubmit={handleSendMessage} className="fs-chat-input-form">
+            <input
+              type="text"
+              className="fs-chat-input"
+              placeholder="Написать сообщение..."
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              maxLength={500}
+            />
+            <button type="submit" className="fs-chat-send" disabled={!chatInput.trim()}>
+              Отправить
+            </button>
+          </form>
         </div>
       </div>
     </div>
