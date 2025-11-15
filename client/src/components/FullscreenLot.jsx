@@ -5,6 +5,7 @@ import useAuctionStore from '../store/auctionStore';
 import useAuthStore from '../store/authStore';
 import socketService from '../services/socket';
 import Confetti from 'react-confetti';
+import { formatTimeRemaining } from '../utils/formatTime';
 
 function FullscreenLot({ lotId, onClose }) {
   const lot = useAuctionStore(state => state.getLot(lotId));
@@ -25,26 +26,7 @@ function FullscreenLot({ lotId, onClose }) {
     if (!lot || lot.status !== 'active') return;
 
     const updateTimer = () => {
-      const end = new Date(lot.endsAt);
-      const now = new Date();
-      const diff = end - now;
-
-      if (diff <= 0) {
-        setTimeLeft('Завершен');
-        return;
-      }
-
-      const hours = Math.floor(diff / 3600000);
-      const minutes = Math.floor((diff % 3600000) / 60000);
-      const seconds = Math.floor((diff % 60000) / 1000);
-
-      if (hours > 0) {
-        setTimeLeft(`${hours}ч ${minutes}м ${seconds}с`);
-      } else if (minutes > 0) {
-        setTimeLeft(`${minutes}м ${seconds}с`);
-      } else {
-        setTimeLeft(`${seconds}с`);
-      }
+      setTimeLeft(formatTimeRemaining(lot.endsAt));
     };
 
     updateTimer();
