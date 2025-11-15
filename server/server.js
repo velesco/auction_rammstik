@@ -427,9 +427,17 @@ setInterval(() => {
         const freshUserData = publicUser(freshUser);
         const currentUserData = publicUser(socket.user);
 
-        // Check if isAdmin status changed
-        if (freshUserData.isAdmin !== currentUserData.isAdmin) {
-          console.log(`👤 Admin status changed for ${freshUser.username}: ${currentUserData.isAdmin} -> ${freshUserData.isAdmin}`);
+        // Check if isAdmin or premium status changed
+        const adminChanged = freshUserData.isAdmin !== currentUserData.isAdmin;
+        const premiumChanged = freshUserData.premium !== currentUserData.premium;
+
+        if (adminChanged || premiumChanged) {
+          if (adminChanged) {
+            console.log(`👤 Admin status changed for ${freshUser.username}: ${currentUserData.isAdmin} -> ${freshUserData.isAdmin}`);
+          }
+          if (premiumChanged) {
+            console.log(`🌟 Premium status changed for ${freshUser.username}: ${currentUserData.premium} -> ${freshUserData.premium}`);
+          }
           socket.user = freshUser; // Update socket.user
           socket.emit('userUpdated', freshUserData);
         }

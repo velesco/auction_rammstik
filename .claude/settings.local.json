@@ -13,7 +13,8 @@
       "Bash(git push:*)",
       "Bash(git commit -m \"$(cat <<''EOF''\nAdd automated update script for production deployments\n\nFeatures:\n- One-command update script (update.sh)\n- Automatic git pull from main branch\n- Dependency updates for server and client\n- Client rebuild with latest changes\n- PM2 process restart\n- Status verification after update\n\nUsage:\n  scp update.sh root@server:/tmp/\n  ssh root@server\n  chmod +x /tmp/update.sh\n  sudo /tmp/update.sh\n\nUpdated DEPLOYMENT.md with update instructions.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git commit -m \"$(cat <<''EOF''\nAdd quick bid multiplier buttons (x2, x3, x5, x10)\n\nFeatures:\n- Quick bid buttons for faster bidding\n- x2: Current price + (minStep * 2)\n- x3: Current price + (minStep * 3)\n- x5: Current price + (minStep * 5)\n- x10: Current price + (minStep * 10)\n- Color-coded buttons (blue, purple, orange, red)\n\nUI improvements:\n- Grid layout with 4 equal-width buttons\n- One-click bid amount selection\n- Located between bid input and submit button\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(1\"\n\nThis ensures VIP access updates instantly when user subscribes/unsubscribes from premium without requiring page refresh.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
