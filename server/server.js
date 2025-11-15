@@ -68,6 +68,18 @@ function publicUser(user) {
   };
 }
 
+// Broadcast lot update to users who can see it (VIP filtering)
+function broadcastLotUpdate(eventName, lotData) {
+  const lot = typeof lotData.vipOnly !== 'undefined' ? lotData : publicLot(lotData);
+
+  io.sockets.sockets.forEach((socket) => {
+    // Send to VIP users or if lot is not VIP only
+    if (!lot.vipOnly || socket.user.premium >= 1) {
+      socket.emit(eventName, lot);
+    }
+  });
+}
+
 // ===== Auto-start scheduled lots =====
 setInterval(() => {
   const now = new Date();
@@ -95,7 +107,7 @@ setInterval(() => {
         );
 
         const updatedLot = lotQueries.findById.get(lot.id);
-        io.emit('lotUpdated', publicLot(updatedLot));
+        broadcastLotUpdate('lotUpdated', updatedLot);
       }
     }
   });
@@ -136,7 +148,7 @@ setInterval(() => {
       }
 
       const updatedLot = lotQueries.findById.get(lot.id);
-      io.emit('lotUpdated', publicLot(updatedLot));
+      broadcastLotUpdate('lotUpdated', updatedLot);
     }
   });
 }, 1000);
@@ -159,12 +171,17 @@ app.get('/api/user', verifyToken, (req, res) => {
 });
 
 // Get all lots (public)
-app.get('/api/lots', (req, res) => {
+app.get('/api/lots', verifyToken, (req, res) => {
   try {
     const status = req.query.status;
-    const lots = status
+    let lots = status
       ? lotQueries.getByStatus.all(status)
       : lotQueries.getAll.all();
+
+    // Filter out VIP lots if user is not VIP
+    if (!req.user || req.user.premium < 1) {
+      lots = lots.filter(lot => !lot.vip_only);
+    }
 
     res.json(lots.map(publicLot));
   } catch (error) {
@@ -174,12 +191,17 @@ app.get('/api/lots', (req, res) => {
 });
 
 // Get single lot (public)
-app.get('/api/lots/:id', (req, res) => {
+app.get('/api/lots/:id', verifyToken, (req, res) => {
   try {
     const lot = lotQueries.findById.get(req.params.id);
 
     if (!lot) {
       return res.status(404).json({ error: 'Lot not found' });
+    }
+
+    // Check if lot is VIP only and user is not VIP
+    if (lot.vip_only && (!req.user || req.user.premium < 1)) {
+      return res.status(403).json({ error: 'This lot is VIP only' });
     }
 
     res.json(publicLot(lot));
@@ -252,7 +274,7 @@ app.post('/api/admin/lots', verifyToken, requireAdmin, (req, res) => {
 
     const publicLotData = publicLot(lot);
 
-    io.emit('lotCreated', publicLotData);
+    broadcastLotUpdate('lotCreated', publicLotData);
 
     res.status(201).json(publicLotData);
   } catch (error) {
@@ -301,7 +323,7 @@ app.put('/api/admin/lots/:id', verifyToken, requireAdmin, (req, res) => {
     const updatedLot = lotQueries.findById.get(lot.id);
     const publicLotData = publicLot(updatedLot);
 
-    io.emit('lotUpdated', publicLotData);
+    broadcastLotUpdate('lotUpdated', publicLotData);
 
     res.json(publicLotData);
   } catch (error) {
@@ -351,7 +373,7 @@ app.post('/api/admin/lots/:id/start', verifyToken, requireAdmin, (req, res) => {
       status: updatedLot.status
     });
 
-    io.emit('lotUpdated', publicLotData);
+    broadcastLotUpdate('lotUpdated', publicLotData);
 
     res.json(publicLotData);
   } catch (error) {
@@ -384,7 +406,7 @@ app.post('/api/admin/lots/:id/end', verifyToken, requireAdmin, (req, res) => {
     const updatedLot = lotQueries.findById.get(lot.id);
     const publicLotData = publicLot(updatedLot);
 
-    io.emit('lotUpdated', publicLotData);
+    broadcastLotUpdate('lotUpdated', publicLotData);
 
     res.json(publicLotData);
   } catch (error) {
@@ -449,9 +471,14 @@ setInterval(() => {
 io.on('connection', (socket) => {
   console.log(`✅ User connected: ${socket.user.username} (ID: ${socket.user.id})`);
 
-  // Send initial state
+  // Send initial state - filter VIP lots if user is not VIP
+  let allLots = lotQueries.getAll.all();
+  if (socket.user.premium < 1) {
+    allLots = allLots.filter(lot => !lot.vip_only);
+  }
+
   socket.emit('bootstrap', {
-    lots: lotQueries.getAll.all().map(publicLot),
+    lots: allLots.map(publicLot),
     user: publicUser(socket.user)
   });
 
@@ -536,7 +563,7 @@ io.on('connection', (socket) => {
         }
       });
 
-      io.emit('lotUpdated', publicLot(updatedLot));
+      broadcastLotUpdate('lotUpdated', updatedLot);
 
       socket.emit('bidAccepted', { bidId: bid.id });
 
@@ -585,7 +612,7 @@ io.on('connection', (socket) => {
 
       // Get updated lot and broadcast
       const updatedLot = lotQueries.findById.get(lotId);
-      io.emit('lotUpdated', publicLot(updatedLot));
+      broadcastLotUpdate('lotUpdated', updatedLot);
 
       console.log(`✅ Bid deleted: bidId=${bidId}, new price=${newCurrentPrice}`);
     } catch (error) {
