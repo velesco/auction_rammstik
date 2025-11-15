@@ -28,12 +28,9 @@ export async function verifyToken(req, res, next) {
 
     const hubUser = response.data;
 
-    console.log('🔍 Hub user data:', JSON.stringify(hubUser, null, 2));
-
     // Check admin status - sync with Hub's isAdmin field
     // If Hub doesn't provide isAdmin field, default to false
     const isAdmin = hubUser.isAdmin || hubUser.admin || false;
-    console.log('✅ User ID:', hubUser.id, 'Is Admin:', isAdmin);
 
     // Sync user to local database
     let user = userQueries.findByHubId.get(hubUser.id);

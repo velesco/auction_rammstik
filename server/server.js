@@ -91,8 +91,6 @@ setInterval(() => {
     if (lot.scheduled_start) {
       const scheduledStart = new Date(lot.scheduled_start + 'Z');
       if (now >= scheduledStart) {
-        console.log('🚀 Auto-starting scheduled lot:', { id: lot.id, title: lot.title });
-
         // Calculate end time
         const endsAt = new Date(now.getTime() + lot.duration_minutes * 60 * 1000);
         const formatForSQLite = (date) => {
@@ -123,20 +121,7 @@ setInterval(() => {
     const now = new Date();
     const endsAt = new Date(lot.ends_at + 'Z');
 
-    // Debug logging
-    const diff = endsAt - now;
-    if (diff < 60000) { // Log if less than 1 minute remaining
-      console.log('⏰ Lot expiring soon:', {
-        id: lot.id,
-        title: lot.title,
-        now: now.toISOString(),
-        endsAt: endsAt.toISOString(),
-        diff_seconds: Math.floor(diff / 1000)
-      });
-    }
-
     if (now >= endsAt) {
-      console.log('🏁 Lot expired:', { id: lot.id, title: lot.title });
 
       // Get highest bid to determine winner
       const highestBid = bidQueries.getHighestBid.get(lot.id);
@@ -260,18 +245,6 @@ app.post('/api/admin/lots', verifyToken, requireAdmin, (req, res) => {
     // Don't auto-start - let admin start manually
     const lot = lotQueries.findById.get(info.lastInsertRowid);
 
-    // Debug logging
-    console.log('📦 Lot created:', {
-      id: lot.id,
-      title: lot.title,
-      duration_minutes: lot.duration_minutes,
-      started_at: lot.started_at,
-      ends_at: lot.ends_at,
-      status: lot.status,
-      now: new Date().toISOString(),
-      ends_at_date: new Date(lot.ends_at).toISOString()
-    });
-
     const publicLotData = publicLot(lot);
 
     broadcastLotUpdate('lotCreated', publicLotData);
@@ -363,15 +336,6 @@ app.post('/api/admin/lots/:id/start', verifyToken, requireAdmin, (req, res) => {
 
     const updatedLot = lotQueries.findById.get(lot.id);
     const publicLotData = publicLot(updatedLot);
-
-    console.log('▶️ Lot started:', {
-      id: lot.id,
-      title: lot.title,
-      duration_minutes: lot.duration_minutes,
-      started_at: updatedLot.started_at,
-      ends_at: updatedLot.ends_at,
-      status: updatedLot.status
-    });
 
     broadcastLotUpdate('lotUpdated', publicLotData);
 
@@ -499,12 +463,6 @@ setInterval(async () => {
           const premiumChanged = freshUserData.premium !== currentUserData.premium;
 
           if (adminChanged || premiumChanged) {
-            if (adminChanged) {
-              console.log(`👤 Admin status changed for ${freshUser.username}: ${currentUserData.isAdmin} -> ${freshUserData.isAdmin}`);
-            }
-            if (premiumChanged) {
-              console.log(`🌟 Premium status changed for ${freshUser.username}: ${currentUserData.premium} -> ${freshUserData.premium}`);
-            }
             socket.user = freshUser; // Update socket.user
             socket.emit('userUpdated', freshUserData);
           }
@@ -524,7 +482,6 @@ setInterval(async () => {
 }, 30000); // Check every 30 seconds
 
 io.on('connection', (socket) => {
-  console.log(`✅ User connected: ${socket.user.username} (ID: ${socket.user.id})`);
 
   // Send initial state - filter VIP lots if user is not VIP
   let allLots = lotQueries.getAll.all();
@@ -539,7 +496,6 @@ io.on('connection', (socket) => {
 
   // Place bid
   socket.on('placeBid', ({ lotId, amount }) => {
-    console.log(`💰 Bid attempt: User ${socket.user.username} (ID: ${socket.user.id}) - Lot ${lotId} - Amount ${amount}`);
 
     try {
       const lot = lotQueries.findById.get(lotId);
@@ -578,7 +534,6 @@ io.on('connection', (socket) => {
         }
         // Auto-adjust to max possible amount (all balance)
         amount = socket.user.balance;
-        console.log(`💰 Auto-adjusted bid to max balance: ${amount} M¢`);
       }
 
       // Check if bid is in last 10 seconds - extend time
@@ -636,7 +591,6 @@ io.on('connection', (socket) => {
   // Delete bid (admin only)
   socket.on('deleteBid', ({ bidId, lotId }) => {
     try {
-      console.log(`🗑️ Delete bid request: bidId=${bidId}, lotId=${lotId}, user=${socket.user.username}, isAdmin=${socket.user.is_admin}`);
 
       // Check if user is admin
       if (!socket.user.is_admin) {
@@ -668,8 +622,6 @@ io.on('connection', (socket) => {
       // Get updated lot and broadcast
       const updatedLot = lotQueries.findById.get(lotId);
       broadcastLotUpdate('lotUpdated', updatedLot);
-
-      console.log(`✅ Bid deleted: bidId=${bidId}, new price=${newCurrentPrice}`);
     } catch (error) {
       console.error('Error deleting bid:', error);
       socket.emit('actionRejected', { reason: 'Не удалось удалить ставку' });
@@ -677,7 +629,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log(`❌ User disconnected: ${socket.user.username}`);
   });
 });
 
@@ -685,6 +636,4 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3001;
 
-server.listen(PORT, () => {
-  console.log(`🚀 Auction server running on http://localhost:${PORT}`);
-});
+server.listen(PORT);

@@ -118,9 +118,6 @@ function LotPage() {
       return;
     }
 
-    console.log('🎯 Attempting to place bid:', { lotId: Number(id), amount });
-    console.log('📡 Socket connected:', socketService.socket?.connected);
-
     socketService.placeBid(Number(id), amount);
   };
 

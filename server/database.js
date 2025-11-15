@@ -57,7 +57,6 @@ function initDatabase() {
   // Add scheduled_start column if it doesn't exist (migration)
   try {
     db.exec(`ALTER TABLE lots ADD COLUMN scheduled_start DATETIME`);
-    console.log('✅ Added scheduled_start column to lots table');
   } catch (e) {
     // Column already exists, ignore
   }
@@ -65,7 +64,6 @@ function initDatabase() {
   // Add vip_only column if it doesn't exist (migration)
   try {
     db.exec(`ALTER TABLE lots ADD COLUMN vip_only BOOLEAN DEFAULT 0`);
-    console.log('✅ Added vip_only column to lots table');
   } catch (e) {
     // Column already exists, ignore
   }
@@ -100,8 +98,6 @@ function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_bids_lot_id ON bids(lot_id);
     CREATE INDEX IF NOT EXISTS idx_bids_user_id ON bids(user_id);
   `);
-
-  console.log('✅ Database initialized successfully');
 }
 
 // Initialize on import

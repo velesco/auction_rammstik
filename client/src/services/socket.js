@@ -31,11 +31,9 @@ class SocketService {
     });
 
     this.socket.on('connect', () => {
-      console.log('✅ Connected to auction server');
     });
 
     this.socket.on('disconnect', () => {
-      console.log('❌ Disconnected from auction server');
     });
 
     this.socket.on('connect_error', (error) => {
@@ -88,7 +86,6 @@ class SocketService {
 
     // User update event (for role changes, balance updates, etc.)
     this.socket.on('userUpdated', (user) => {
-      console.log('👤 User data updated from server:', user);
       useAuthStore.getState().updateUser(user);
     });
   }
