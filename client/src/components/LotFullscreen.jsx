@@ -245,68 +245,70 @@ function LotFullscreen({ lot, onClose }) {
           </div>
         )}
 
-        <div className="fs-bids">
-          <h3>Bid History ({updatedLot.bids?.length || 0})</h3>
-          <div className="fs-bids-list">
-            {updatedLot.bids && updatedLot.bids.length > 0 ? (
-              updatedLot.bids.map(bid => (
-                <div key={bid.id} className="fs-bid-item">
-                  {bid.avatar && (
-                    <img src={bid.avatar} alt={bid.username} className="bid-avatar" />
-                  )}
-                  <div className="bid-info">
-                    <div className="bid-amount">{formatPrice(bid.amount)}</div>
-                    <div className="bid-user">{bid.username}</div>
-                  </div>
-                  <div className="bid-time">
-                    {new Date(bid.createdAt).toLocaleTimeString()}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="fs-bids-empty">No bids yet. Be the first!</div>
-            )}
-          </div>
-        </div>
-
-        <div className="fs-chat">
-          <h3>Чат ({chatMessages.length})</h3>
-          <div className="fs-chat-messages">
-            {chatMessages.length > 0 ? (
-              chatMessages.map(msg => (
-                <div key={msg.id} className="fs-chat-message">
-                  {msg.avatar && (
-                    <img src={msg.avatar} alt={msg.username} className="chat-avatar" />
-                  )}
-                  <div className="chat-content">
-                    <div className="chat-header">
-                      <span className="chat-username">{msg.username}</span>
-                      <span className="chat-time">
-                        {new Date(msg.createdAt).toLocaleTimeString()}
-                      </span>
+        <div className="fs-content-grid">
+          <div className="fs-bids">
+            <h3>Bid History ({updatedLot.bids?.length || 0})</h3>
+            <div className="fs-bids-list">
+              {updatedLot.bids && updatedLot.bids.length > 0 ? (
+                updatedLot.bids.map(bid => (
+                  <div key={bid.id} className="fs-bid-item">
+                    {bid.avatar && (
+                      <img src={bid.avatar} alt={bid.username} className="bid-avatar" />
+                    )}
+                    <div className="bid-info">
+                      <div className="bid-amount">{formatPrice(bid.amount)}</div>
+                      <div className="bid-user">{bid.username}</div>
                     </div>
-                    <div className="chat-text">{msg.message}</div>
+                    <div className="bid-time">
+                      {new Date(bid.createdAt).toLocaleTimeString()}
+                    </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              <div className="fs-chat-empty">Пока нет сообщений. Начните общение!</div>
-            )}
-            <div ref={chatEndRef} />
+                ))
+              ) : (
+                <div className="fs-bids-empty">No bids yet. Be the first!</div>
+              )}
+            </div>
           </div>
-          <form onSubmit={handleSendMessage} className="fs-chat-input-form">
-            <input
-              type="text"
-              className="fs-chat-input"
-              placeholder="Написать сообщение..."
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              maxLength={500}
-            />
-            <button type="submit" className="fs-chat-send" disabled={!chatInput.trim()}>
-              Отправить
-            </button>
-          </form>
+
+          <div className="fs-chat">
+            <h3>Чат ({chatMessages.length})</h3>
+            <div className="fs-chat-messages">
+              {chatMessages.length > 0 ? (
+                chatMessages.map(msg => (
+                  <div key={msg.id} className="fs-chat-message">
+                    {msg.avatar && (
+                      <img src={msg.avatar} alt={msg.username} className="chat-avatar" />
+                    )}
+                    <div className="chat-content">
+                      <div className="chat-header">
+                        <span className="chat-username">{msg.username}</span>
+                        <span className="chat-time">
+                          {new Date(msg.createdAt).toLocaleTimeString()}
+                        </span>
+                      </div>
+                      <div className="chat-text">{msg.message}</div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="fs-chat-empty">Пока нет сообщений. Начните общение!</div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+            <form onSubmit={handleSendMessage} className="fs-chat-input-form">
+              <input
+                type="text"
+                className="fs-chat-input"
+                placeholder="Написать сообщение..."
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                maxLength={500}
+              />
+              <button type="submit" className="fs-chat-send" disabled={!chatInput.trim()}>
+                Отправить
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>

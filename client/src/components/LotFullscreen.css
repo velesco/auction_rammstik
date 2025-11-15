@@ -307,13 +307,20 @@
   color: var(--muted);
 }
 
+/* Content Grid - Bids and Chat side by side */
+.fs-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
 /* Chat Section */
 .fs-chat {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 24px;
-  margin-top: 24px;
 }
 
 .fs-chat h3 {
@@ -452,6 +459,10 @@
 }
 
 @media (max-width: 768px) {
+  .fs-content-grid {
+    grid-template-columns: 1fr;
+  }
+
   .fs-title {
     font-size: 28px;
   }
