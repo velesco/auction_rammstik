@@ -37,6 +37,7 @@ function publicLot(lot) {
     currentPrice: lot.current_price || lot.starting_price,
     minStep: lot.min_step,
     durationMinutes: lot.duration_minutes,
+    vipOnly: Boolean(lot.vip_only),
     createdAt: lot.created_at ? lot.created_at + 'Z' : null,
     scheduledStart: lot.scheduled_start ? lot.scheduled_start + 'Z' : null,
     startedAt: lot.started_at ? lot.started_at + 'Z' : null,
@@ -209,7 +210,7 @@ app.get('/api/lots/:id/bids', (req, res) => {
 // Create lot (admin only)
 app.post('/api/admin/lots', verifyToken, requireAdmin, (req, res) => {
   try {
-    const { title, description, imageUrl, startingPrice, minStep, durationMinutes, scheduledStart } = req.body;
+    const { title, description, imageUrl, startingPrice, minStep, durationMinutes, vipOnly, scheduledStart } = req.body;
 
     if (!title || startingPrice === undefined || !minStep) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -229,6 +230,7 @@ app.post('/api/admin/lots', verifyToken, requireAdmin, (req, res) => {
       startingPrice,
       minStep,
       durationMinutes || 60,
+      vipOnly ? 1 : 0,
       formattedScheduledStart,
       req.user.id
     );
@@ -272,7 +274,7 @@ app.put('/api/admin/lots/:id', verifyToken, requireAdmin, (req, res) => {
       return res.status(400).json({ error: 'Cannot edit active or ended lot' });
     }
 
-    const { title, description, imageUrl, startingPrice, minStep, scheduledStart } = req.body;
+    const { title, description, imageUrl, startingPrice, minStep, vipOnly, scheduledStart } = req.body;
 
     // Format scheduled start time if provided
     let formattedScheduledStart = lot.scheduled_start;
@@ -291,6 +293,7 @@ app.put('/api/admin/lots/:id', verifyToken, requireAdmin, (req, res) => {
       imageUrl !== undefined ? imageUrl : lot.image_url,
       startingPrice !== undefined ? startingPrice : lot.starting_price,
       minStep !== undefined ? minStep : lot.min_step,
+      vipOnly !== undefined ? (vipOnly ? 1 : 0) : lot.vip_only,
       formattedScheduledStart,
       lot.id
     );
@@ -457,6 +460,13 @@ io.on('connection', (socket) => {
 
       if (lot.status !== 'active') {
         return socket.emit('bidRejected', { reason: 'Lot is not active' });
+      }
+
+      // Check if lot is VIP only
+      if (lot.vip_only && socket.user.premium < 1) {
+        return socket.emit('bidRejected', {
+          reason: 'Этот лот доступен только для VIP пользователей'
+        });
       }
 
       const currentPrice = lot.current_price || lot.starting_price;

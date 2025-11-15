@@ -41,6 +41,7 @@ function initDatabase() {
       current_price REAL,
       min_step REAL NOT NULL DEFAULT 1,
       duration_minutes INTEGER NOT NULL DEFAULT 60,
+      vip_only BOOLEAN DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       scheduled_start DATETIME,
       started_at DATETIME,
@@ -57,6 +58,14 @@ function initDatabase() {
   try {
     db.exec(`ALTER TABLE lots ADD COLUMN scheduled_start DATETIME`);
     console.log('✅ Added scheduled_start column to lots table');
+  } catch (e) {
+    // Column already exists, ignore
+  }
+
+  // Add vip_only column if it doesn't exist (migration)
+  try {
+    db.exec(`ALTER TABLE lots ADD COLUMN vip_only BOOLEAN DEFAULT 0`);
+    console.log('✅ Added vip_only column to lots table');
   } catch (e) {
     // Column already exists, ignore
   }
@@ -126,12 +135,12 @@ export const lotQueries = {
   `),
   getByStatus: db.prepare('SELECT * FROM lots WHERE status = ? ORDER BY created_at DESC'),
   create: db.prepare(`
-    INSERT INTO lots (title, description, image_url, starting_price, min_step, duration_minutes, scheduled_start, creator_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO lots (title, description, image_url, starting_price, min_step, duration_minutes, vip_only, scheduled_start, creator_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `),
   update: db.prepare(`
     UPDATE lots
-    SET title = ?, description = ?, image_url = ?, starting_price = ?, min_step = ?, scheduled_start = ?
+    SET title = ?, description = ?, image_url = ?, starting_price = ?, min_step = ?, vip_only = ?, scheduled_start = ?
     WHERE id = ?
   `),
   updateStatus: db.prepare('UPDATE lots SET status = ? WHERE id = ?'),

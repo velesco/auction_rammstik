@@ -77,9 +77,16 @@ function LotCard({ lot, onClick }) {
           )}
         </div>
 
-        <h3 className="text-lg font-bold text-white mb-2 line-clamp-2">
-          {lot.title}
-        </h3>
+        <div className="flex items-center gap-2 mb-2">
+          <h3 className="text-lg font-bold text-white line-clamp-2 flex-1">
+            {lot.title}
+          </h3>
+          {lot.vipOnly && (
+            <span className="px-2 py-1 bg-gradient-to-r from-yellow-500 to-yellow-600 text-slate-900 text-xs font-bold rounded" title="Только для VIP">
+              🌟 VIP
+            </span>
+          )}
+        </div>
 
         {lot.description && (
           <p className="text-sm text-slate-400 mb-3 line-clamp-2">

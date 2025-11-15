@@ -10,18 +10,21 @@ function AdminPanel({ lots }) {
     startingPrice: 100,
     minStep: 10,
     durationMinutes: 60,
+    vipOnly: false,
     scheduledStart: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'title' || name === 'description' || name === 'imageUrl' || name === 'scheduledStart'
-        ? value
-        : parseFloat(value) || 0
+      [name]: type === 'checkbox'
+        ? checked
+        : (name === 'title' || name === 'description' || name === 'imageUrl' || name === 'scheduledStart'
+          ? value
+          : parseFloat(value) || 0)
     }));
   };
 
@@ -39,6 +42,7 @@ function AdminPanel({ lots }) {
         startingPrice: 100,
         minStep: 10,
         durationMinutes: 60,
+        vipOnly: false,
         scheduledStart: ''
       });
       setShowCreateForm(false);
@@ -186,6 +190,21 @@ function AdminPanel({ lots }) {
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-green-400 focus:outline-none"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="vipOnly"
+                  checked={formData.vipOnly}
+                  onChange={handleInputChange}
+                  className="w-5 h-5 bg-slate-900 border border-slate-700 rounded focus:ring-2 focus:ring-yellow-400"
+                />
+                <span className="text-sm text-slate-400">
+                  🌟 Только для VIP (премиум подписчики)
+                </span>
+              </label>
             </div>
 
             <div>
