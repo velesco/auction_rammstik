@@ -406,6 +406,13 @@ io.on('connection', (socket) => {
         });
       }
 
+      // Check if user has enough balance
+      if (socket.user.balance < amount) {
+        return socket.emit('bidRejected', {
+          reason: `Insufficient balance. You have ${socket.user.balance.toFixed(2)} M¢, but bid requires ${amount} M¢`
+        });
+      }
+
       // Check if bid is in last 10 seconds - extend time
       const now = new Date();
       const endsAt = new Date(lot.ends_at);

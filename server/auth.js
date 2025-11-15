@@ -30,8 +30,8 @@ export async function verifyToken(req, res, next) {
 
     console.log('🔍 Hub user data:', JSON.stringify(hubUser, null, 2));
 
-    // Check admin status - Hub uses hardcoded IDs (1, 2, 3, 42)
-    const isAdmin = [1, 2, 3, 42].includes(hubUser.id);
+    // Check admin status - Hardcoded admin IDs (modify this list to add/remove admins)
+    const isAdmin = [2, 3, 42].includes(hubUser.id);
     console.log('✅ User ID:', hubUser.id, 'Is Admin:', isAdmin);
 
     // Sync user to local database
@@ -119,8 +119,8 @@ export async function socketAuth(socket, next) {
 
     const hubUser = response.data;
 
-    // Check admin status - Hub uses hardcoded IDs (1, 2, 3, 42)
-    const isAdmin = [1, 2, 3, 42].includes(hubUser.id);
+    // Check admin status - Hardcoded admin IDs (modify this list to add/remove admins)
+    const isAdmin = [2, 3, 42].includes(hubUser.id);
 
     // Get or create user in local database
     let user = userQueries.findByHubId.get(hubUser.id);
