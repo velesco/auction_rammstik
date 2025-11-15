@@ -402,15 +402,21 @@ io.on('connection', (socket) => {
 
       if (amount < minBid) {
         return socket.emit('bidRejected', {
-          reason: `Minimum bid is ${minBid}`
+          reason: `Минимальная ставка: ${minBid} M¢`
         });
       }
 
-      // Check if user has enough balance
+      // Check if user has enough balance - if not, auto-adjust to max possible
       if (socket.user.balance < amount) {
-        return socket.emit('bidRejected', {
-          reason: `Insufficient balance. You have ${socket.user.balance.toFixed(2)} M¢, but bid requires ${amount} M¢`
-        });
+        // Check if user can afford at least the minimum bid
+        if (socket.user.balance < minBid) {
+          return socket.emit('bidRejected', {
+            reason: `Недостаточно средств. У вас ${socket.user.balance.toFixed(2)} M¢, минимальная ставка: ${minBid} M¢`
+          });
+        }
+        // Auto-adjust to max possible amount (all balance)
+        amount = socket.user.balance;
+        console.log(`💰 Auto-adjusted bid to max balance: ${amount} M¢`);
       }
 
       // Check if bid is in last 10 seconds - extend time

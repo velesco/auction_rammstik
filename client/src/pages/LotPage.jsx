@@ -289,6 +289,7 @@ function LotPage() {
                       onChange={(e) => setBidAmount(e.target.value)}
                       step={lot.minStep}
                       min={(lot.currentPrice || lot.startingPrice) + lot.minStep}
+                      max={user?.balance || 0}
                       className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white text-xl font-bold focus:outline-none focus:border-green-400"
                     />
                   </div>
