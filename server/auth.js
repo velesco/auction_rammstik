@@ -65,8 +65,8 @@ export async function verifyToken(req, res, next) {
         hubUser.discord_avatar || user.discord_avatar,
         hubUser.google_avatar || user.google_avatar,
         isAdmin ? 1 : 0,
-        hubUser.premium || user.premium,
-        hubUser.balance || user.balance || 0,
+        hubUser.premium ?? user.premium, // Fix: Use ?? to allow premium = 0
+        hubUser.balance ?? user.balance ?? 0, // Fix: Use ?? to allow balance = 0
         hubUser.id
       );
       user = userQueries.findByHubId.get(hubUser.id);
@@ -153,8 +153,8 @@ export async function socketAuth(socket, next) {
         hubUser.discord_avatar || user.discord_avatar,
         hubUser.google_avatar || user.google_avatar,
         isAdmin ? 1 : 0,
-        hubUser.premium || user.premium,
-        hubUser.balance || user.balance || 0,
+        hubUser.premium ?? user.premium, // Fix: Use ?? to allow premium = 0
+        hubUser.balance ?? user.balance ?? 0, // Fix: Use ?? to allow balance = 0
         hubUser.id
       );
       user = userQueries.findByHubId.get(hubUser.id);

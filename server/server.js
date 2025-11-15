@@ -458,18 +458,18 @@ setInterval(async () => {
 
         const hubUser = await hubResponse.json();
 
-        // Update local database
+        // Update local database - preserve OAuth fields, use nullish coalescing for premium/balance
         userQueries.update.run(
           hubUser.name,
           hubUser.email,
-          null, // discord_id
-          null, // google_id
-          null, // steam_id
-          hubUser.avatar || null,
-          null, // google_avatar
+          socket.user.discord_id, // Preserve OAuth data
+          socket.user.google_id,
+          socket.user.steam_id,
+          hubUser.avatar || socket.user.discord_avatar, // Use Hub avatar or preserve discord_avatar
+          socket.user.google_avatar,
           hubUser.isAdmin || hubUser.admin || false,
-          hubUser.premium || 0,
-          hubUser.balance || 0,
+          hubUser.premium ?? 0, // Use ?? to allow premium = 0
+          hubUser.balance ?? 0, // Use ?? to allow balance = 0
           socket.user.hub_user_id
         );
 
