@@ -293,6 +293,39 @@ function LotPage() {
                     />
                   </div>
 
+                  {/* Quick bid multiplier buttons */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-400 mb-2">
+                      Быстрая ставка:
+                    </label>
+                    <div className="grid grid-cols-4 gap-2">
+                      <button
+                        onClick={() => setBidAmount(((lot.currentPrice || lot.startingPrice) + lot.minStep * 2).toString())}
+                        className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors"
+                      >
+                        x2
+                      </button>
+                      <button
+                        onClick={() => setBidAmount(((lot.currentPrice || lot.startingPrice) + lot.minStep * 3).toString())}
+                        className="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors"
+                      >
+                        x3
+                      </button>
+                      <button
+                        onClick={() => setBidAmount(((lot.currentPrice || lot.startingPrice) + lot.minStep * 5).toString())}
+                        className="px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors"
+                      >
+                        x5
+                      </button>
+                      <button
+                        onClick={() => setBidAmount(((lot.currentPrice || lot.startingPrice) + lot.minStep * 10).toString())}
+                        className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors"
+                      >
+                        x10
+                      </button>
+                    </div>
+                  </div>
+
                   <button
                     onClick={handlePlaceBid}
                     className="w-full px-6 py-4 bg-green-500 hover:bg-green-600 text-white font-bold text-xl rounded-lg transition-colors transform hover:scale-105"
