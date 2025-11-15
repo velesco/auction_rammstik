@@ -471,6 +471,49 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Delete bid (admin only)
+  socket.on('deleteBid', ({ bidId, lotId }) => {
+    try {
+      console.log(`🗑️ Delete bid request: bidId=${bidId}, lotId=${lotId}, user=${socket.user.username}, isAdmin=${socket.user.is_admin}`);
+
+      // Check if user is admin
+      if (!socket.user.is_admin) {
+        return socket.emit('actionRejected', { reason: 'Требуются права администратора' });
+      }
+
+      // Check if bid exists
+      const bid = bidQueries.findById.get(bidId);
+      if (!bid) {
+        return socket.emit('actionRejected', { reason: 'Ставка не найдена' });
+      }
+
+      // Delete the bid
+      bidQueries.delete.run(bidId);
+
+      // Get updated lot to recalculate current price
+      const lot = lotQueries.findById.get(lotId);
+      if (!lot) {
+        return socket.emit('actionRejected', { reason: 'Лот не найден' });
+      }
+
+      // Find new highest bid
+      const highestBid = bidQueries.getHighestBid.get(lotId);
+      const newCurrentPrice = highestBid ? highestBid.amount : null;
+
+      // Update lot current price
+      lotQueries.updateCurrentPrice.run(newCurrentPrice, lotId);
+
+      // Get updated lot and broadcast
+      const updatedLot = lotQueries.findById.get(lotId);
+      io.emit('lotUpdated', publicLot(updatedLot));
+
+      console.log(`✅ Bid deleted: bidId=${bidId}, new price=${newCurrentPrice}`);
+    } catch (error) {
+      console.error('Error deleting bid:', error);
+      socket.emit('actionRejected', { reason: 'Не удалось удалить ставку' });
+    }
+  });
+
   socket.on('disconnect', () => {
     console.log(`❌ User disconnected: ${socket.user.username}`);
   });

@@ -156,6 +156,7 @@ export const bidQueries = {
     INSERT INTO bids (lot_id, user_id, amount)
     VALUES (?, ?, ?)
   `),
+  delete: db.prepare('DELETE FROM bids WHERE id = ?'),
   getHighestBid: db.prepare(`
     SELECT b.*, u.username
     FROM bids b

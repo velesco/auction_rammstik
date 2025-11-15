@@ -15,6 +15,7 @@ function LotPage() {
   const lot = useAuctionStore(state => state.getLot(Number(id)));
   const settings = useAuctionStore(state => state.settings);
   const user = useAuthStore(state => state.user);
+  const isAdmin = useAuthStore(state => state.isAdmin());
 
   const [bidAmount, setBidAmount] = useState('');
   const [timeLeft, setTimeLeft] = useState('');
@@ -121,6 +122,13 @@ function LotPage() {
     console.log('📡 Socket connected:', socketService.socket?.connected);
 
     socketService.placeBid(Number(id), amount);
+  };
+
+  const handleDeleteBid = (bidId) => {
+    if (!window.confirm('Вы уверены, что хотите удалить эту ставку?')) {
+      return;
+    }
+    socketService.socket.emit('deleteBid', { bidId, lotId: Number(id) });
   };
 
   if (!lot) {
@@ -352,8 +360,19 @@ function LotPage() {
                             </div>
                           </div>
                         </div>
-                        <div className="text-xl font-bold text-green-400">
-                          {bid.amount} M¢
+                        <div className="flex items-center gap-3">
+                          <div className="text-xl font-bold text-green-400">
+                            {bid.amount} M¢
+                          </div>
+                          {isAdmin && (
+                            <button
+                              onClick={() => handleDeleteBid(bid.id)}
+                              className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-lg transition-colors"
+                              title="Удалить ставку"
+                            >
+                              🗑️
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
