@@ -11,7 +11,7 @@ function AuctionPage() {
     <div className="min-h-screen bg-bg">
       <Header />
       <br />
-      <main className="container mx-auto px-4 py-8 mt-6">
+      <main className="max-w-7xl mx-auto px-4 py-8 mt-6">
         <div className="mb-8 bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-6 border border-slate-700 shadow-xl">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>

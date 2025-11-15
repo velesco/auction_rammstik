@@ -14,7 +14,7 @@ function LotGrid({ lots }) {
           <h3 className="text-xl font-bold text-white mb-4">
             🔥 Активные лоты ({activeLots.length})
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {activeLots.map(lot => (
               <LotCard
                 key={lot.id}
@@ -31,7 +31,7 @@ function LotGrid({ lots }) {
           <h3 className="text-xl font-bold text-white mb-4">
             ⏳ Ожидают начала ({pendingLots.length})
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pendingLots.map(lot => (
               <LotCard
                 key={lot.id}
@@ -48,7 +48,7 @@ function LotGrid({ lots }) {
           <h3 className="text-xl font-bold text-white mb-4">
             ✅ Завершенные лоты ({endedLots.length})
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {endedLots.map(lot => (
               <LotCard
                 key={lot.id}
