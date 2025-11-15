@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "Bash(node migrate_balance.js:*)",
+      "Bash(node -e:*)",
+      "Bash(C:UsersvelesDesktopauction_rammstikserverserver.js)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

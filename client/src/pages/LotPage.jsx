@@ -1,0 +1,377 @@
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import useAuctionStore from '../store/auctionStore';
+import useAuthStore from '../store/authStore';
+import socketService from '../services/socket';
+import Confetti from 'react-confetti';
+import Header from '../components/Header';
+
+function LotPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const lot = useAuctionStore(state => state.getLot(Number(id)));
+  const settings = useAuctionStore(state => state.settings);
+  const user = useAuthStore(state => state.user);
+
+  const [bidAmount, setBidAmount] = useState('');
+  const [timeLeft, setTimeLeft] = useState('');
+  const [showBanner, setShowBanner] = useState(false);
+  const [lastBid, setLastBid] = useState(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [error, setError] = useState('');
+
+  const audioContextRef = useRef(null);
+
+  // Timer
+  useEffect(() => {
+    if (!lot || lot.status !== 'active') return;
+
+    const updateTimer = () => {
+      const end = new Date(lot.endsAt);
+      const now = new Date();
+      const diff = end - now;
+
+      if (diff <= 0) {
+        setTimeLeft('Завершен');
+        return;
+      }
+
+      const hours = Math.floor(diff / 3600000);
+      const minutes = Math.floor((diff % 3600000) / 60000);
+      const seconds = Math.floor((diff % 60000) / 1000);
+
+      if (hours > 0) {
+        setTimeLeft(`${hours}ч ${minutes}м ${seconds}с`);
+      } else if (minutes > 0) {
+        setTimeLeft(`${minutes}м ${seconds}с`);
+      } else {
+        setTimeLeft(`${seconds}с`);
+      }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 250);
+    return () => clearInterval(interval);
+  }, [lot?.endsAt, lot?.status]);
+
+  // Set initial bid amount
+  useEffect(() => {
+    if (!lot) return;
+    const minBid = (lot.currentPrice || lot.startingPrice) + lot.minStep;
+    setBidAmount(minBid.toString());
+  }, [lot?.currentPrice, lot?.startingPrice, lot?.minStep]);
+
+  // Listen for bid events
+  useEffect(() => {
+    const handleNewBid = ({ lotId: eventLotId, bid }) => {
+      if (eventLotId !== Number(id)) return;
+
+      setLastBid(bid);
+
+      // Play sound
+      if (settings.sound && audioContextRef.current) {
+        playBeep();
+      }
+
+      // Show confetti
+      if (settings.confetti) {
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 3000);
+      }
+
+      // Show banner
+      setShowBanner(true);
+      setTimeout(() => setShowBanner(false), settings.bannerMs);
+    };
+
+    const handleBidRejected = ({ reason }) => {
+      setError(reason);
+      setTimeout(() => setError(''), 3000);
+    };
+
+    socketService.on('newBid', handleNewBid);
+    socketService.on('bidRejected', handleBidRejected);
+
+    return () => {
+      socketService.off('newBid', handleNewBid);
+      socketService.off('bidRejected', handleBidRejected);
+    };
+  }, [id, settings]);
+
+  // Initialize audio context
+  useEffect(() => {
+    if (settings.sound && !audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    }
+  }, [settings.sound]);
+
+  const playBeep = () => {
+    if (!audioContextRef.current) return;
+
+    const ctx = audioContextRef.current;
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+
+    gainNode.gain.setValueAtTime(settings.volume, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.2);
+  };
+
+  const handlePlaceBid = () => {
+    const amount = parseFloat(bidAmount);
+    if (isNaN(amount)) {
+      setError('Введите корректную сумму');
+      setTimeout(() => setError(''), 3000);
+      return;
+    }
+
+    console.log('🎯 Attempting to place bid:', { lotId: Number(id), amount });
+    console.log('📡 Socket connected:', socketService.socket?.connected);
+
+    socketService.placeBid(Number(id), amount);
+  };
+
+  if (!lot) {
+    return (
+      <div className="min-h-screen bg-bg">
+        <Header />
+        <br />
+        <div className="container mx-auto px-4 py-8 mt-16 text-center">
+          <h2 className="text-2xl font-bold text-white mb-4">Лот не найден</h2>
+          <button
+            onClick={() => navigate('/')}
+            className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg transition-colors"
+          >
+            Вернуться к аукционам
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const statusColors = {
+    active: 'bg-green-500',
+    pending: 'bg-yellow-500',
+    ended: 'bg-slate-500'
+  };
+
+  const statusLabels = {
+    active: 'Активен',
+    pending: 'Ожидает',
+    ended: 'Завершен'
+  };
+
+  return (
+    <div className="min-h-screen bg-bg">
+      <Header />
+      <br />
+      {showConfetti && (
+        <Confetti
+          width={window.innerWidth}
+          height={window.innerHeight}
+          recycle={false}
+          numberOfPieces={500}
+        />
+      )}
+
+      <main className="container mx-auto px-4 py-8 mt-2">
+        <button
+          onClick={() => navigate('/')}
+          className="mb-6 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors flex items-center gap-2"
+        >
+          ← Назад к аукционам
+        </button>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column - Image and Info */}
+          <div className="space-y-6">
+            {lot.imageUrl && (
+              <div className="bg-slate-900 rounded-2xl overflow-hidden border border-slate-700">
+                <img
+                  src={lot.imageUrl}
+                  alt={lot.title}
+                  className="w-full h-auto object-contain max-h-[600px]"
+                />
+              </div>
+            )}
+
+            <div className="bg-card rounded-2xl p-6 border border-slate-700">
+              <div className="flex items-center justify-between mb-4">
+                <span className={`px-3 py-1 rounded-lg text-sm font-bold text-slate-900 ${statusColors[lot.status]}`}>
+                  {statusLabels[lot.status]}
+                </span>
+                {lot.status === 'active' && timeLeft && (
+                  <span className="text-2xl font-mono font-bold text-green-400">
+                    {timeLeft}
+                  </span>
+                )}
+              </div>
+
+              <h1 className="text-4xl font-bold text-white mb-4">{lot.title}</h1>
+
+              {lot.description && (
+                <p className="text-lg text-slate-300 mb-6">{lot.description}</p>
+              )}
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center p-4 bg-slate-900 rounded-lg">
+                  <span className="text-slate-400 text-lg">Начальная цена:</span>
+                  <span className="text-white font-bold text-xl">{lot.startingPrice} M¢</span>
+                </div>
+
+                <div className="flex justify-between items-center p-4 bg-slate-900 rounded-lg">
+                  <span className="text-slate-400 text-lg">Текущая цена:</span>
+                  <span className="text-green-400 font-bold text-2xl">
+                    {lot.currentPrice || lot.startingPrice} M¢
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center p-4 bg-slate-900 rounded-lg">
+                  <span className="text-slate-400 text-lg">Минимальный шаг:</span>
+                  <span className="text-white font-bold text-xl">{lot.minStep} M¢</span>
+                </div>
+
+                {lot.currentBidder && (
+                  <div className="flex justify-between items-center p-4 bg-slate-900 rounded-lg">
+                    <span className="text-slate-400 text-lg">Лидер:</span>
+                    <div className="flex items-center gap-2">
+                      {lot.currentBidderAvatar && (
+                        <img
+                          src={lot.currentBidderAvatar}
+                          alt={lot.currentBidder}
+                          className="w-8 h-8 rounded-full"
+                        />
+                      )}
+                      <span className="text-white font-bold text-xl">{lot.currentBidder}</span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center p-4 bg-slate-900 rounded-lg">
+                  <span className="text-slate-400 text-lg">Всего ставок:</span>
+                  <span className="text-white font-bold text-xl">{lot.bidsCount || 0}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Bidding and History */}
+          <div className="space-y-6">
+            {/* Bidding Form */}
+            {lot.status === 'active' && (
+              <div className="bg-card rounded-2xl p-6 border border-slate-700">
+                <h2 className="text-2xl font-bold text-white mb-6">Сделать ставку</h2>
+
+                {error && (
+                  <div className="mb-4 p-4 bg-red-500/20 border border-red-500 rounded-lg text-red-400">
+                    {error}
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-400 mb-2">
+                      Ваша ставка (минимум: {(lot.currentPrice || lot.startingPrice) + lot.minStep} M¢)
+                    </label>
+                    <input
+                      type="number"
+                      value={bidAmount}
+                      onChange={(e) => setBidAmount(e.target.value)}
+                      step={lot.minStep}
+                      min={(lot.currentPrice || lot.startingPrice) + lot.minStep}
+                      className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white text-xl font-bold focus:outline-none focus:border-green-400"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handlePlaceBid}
+                    className="w-full px-6 py-4 bg-green-500 hover:bg-green-600 text-white font-bold text-xl rounded-lg transition-colors transform hover:scale-105"
+                  >
+                    Сделать ставку
+                  </button>
+
+                  <div className="text-center text-sm text-slate-400">
+                    Ваш баланс: <span className="font-bold text-green-400">{user?.balance?.toFixed(2) || 0} M¢</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Bid History */}
+            <div className="bg-card rounded-2xl p-6 border border-slate-700">
+              <h2 className="text-2xl font-bold text-white mb-6">История ставок</h2>
+
+              {lot.bids && lot.bids.length > 0 ? (
+                <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                  {lot.bids.map((bid, index) => (
+                    <div
+                      key={bid.id}
+                      className={`p-4 rounded-lg ${
+                        index === 0 ? 'bg-green-500/20 border border-green-500' : 'bg-slate-900'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          {bid.avatar && (
+                            <img
+                              src={bid.avatar}
+                              alt={bid.username}
+                              className="w-10 h-10 rounded-full"
+                            />
+                          )}
+                          <div>
+                            <div className="font-semibold text-white">{bid.username}</div>
+                            <div className="text-xs text-slate-400">
+                              {formatDistanceToNow(new Date(bid.createdAt), { addSuffix: true, locale: ru })}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-xl font-bold text-green-400">
+                          {bid.amount} M¢
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-slate-400">
+                  Ставок пока нет. Будьте первым!
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* New Bid Banner */}
+      {showBanner && lastBid && (
+        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50 animate-bounce">
+          <div className="bg-green-500 text-white px-8 py-4 rounded-2xl shadow-2xl border-4 border-white">
+            <div className="text-center">
+              <div className="text-sm font-semibold mb-1">Новая ставка!</div>
+              <div className="flex items-center gap-3">
+                {lastBid.avatar && (
+                  <img src={lastBid.avatar} alt={lastBid.username} className="w-8 h-8 rounded-full" />
+                )}
+                <span className="font-bold text-lg">{lastBid.username}</span>
+                <span className="text-2xl font-bold">{lastBid.amount} M¢</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default LotPage;

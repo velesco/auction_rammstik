@@ -1,0 +1,298 @@
+.admin-page {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.admin-header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 24px 0;
+}
+
+.admin-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.admin-header h1 {
+  font-size: 32px;
+  font-weight: 900;
+  margin: 0;
+  color: var(--accent);
+}
+
+.back-link {
+  padding: 10px 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: #e5e7eb;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.back-link:hover {
+  background: #1f2937;
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.admin-content {
+  padding: 32px 20px;
+}
+
+.admin-section {
+  margin-bottom: 40px;
+}
+
+.admin-section h2 {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
+.admin-message {
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+
+.admin-message.success {
+  background: #0e2c18;
+  color: #86efac;
+  border: 1px solid #14532d;
+}
+
+.admin-message.error {
+  background: #3d0c0c;
+  color: #fca5a5;
+  border: 1px solid #7f1d1d;
+}
+
+.admin-message.info {
+  background: #0c1e3d;
+  color: #93c5fd;
+  border: 1px solid #1e3a8a;
+}
+
+.create-lot-btn {
+  padding: 14px 28px;
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  color: #052814;
+  font-size: 16px;
+  font-weight: 800;
+  transition: all 0.2s ease;
+}
+
+.create-lot-btn:hover {
+  background: #16a34a;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
+}
+
+.admin-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+}
+
+.admin-card h2 {
+  margin: 0 0 24px;
+  font-size: 22px;
+}
+
+.lot-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-field label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #cbd5e1;
+}
+
+.form-field input,
+.form-field textarea {
+  padding: 12px 16px;
+  background: #0b1222;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: #e5e7eb;
+  font-size: 15px;
+}
+
+.form-field input:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.submit-btn {
+  padding: 14px 28px;
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  color: #052814;
+  font-size: 16px;
+  font-weight: 800;
+  transition: all 0.2s ease;
+  align-self: flex-start;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #16a34a;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+}
+
+.lots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-lot-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.admin-lot-card:hover {
+  border-color: var(--accent);
+}
+
+.admin-lot-info {
+  flex: 1;
+}
+
+.admin-lot-info h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.admin-lot-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.admin-lot-meta span {
+  color: #cbd5e1;
+}
+
+.admin-lot-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.start-btn {
+  background: var(--accent);
+  border: none;
+  color: #052814;
+}
+
+.start-btn:hover {
+  background: #16a34a;
+  transform: translateY(-2px);
+}
+
+.end-btn {
+  background: var(--warn);
+  border: none;
+  color: #1a1304;
+}
+
+.end-btn:hover {
+  background: #d97706;
+  transform: translateY(-2px);
+}
+
+.delete-btn {
+  background: var(--danger);
+  border: none;
+  color: white;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+}
+
+.empty-admin {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+}
+
+.empty-admin p {
+  font-size: 18px;
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-lot-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-lot-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .action-btn {
+    flex: 1;
+  }
+
+  .admin-header h1 {
+    font-size: 24px;
+  }
+}
