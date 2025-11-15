@@ -140,7 +140,17 @@ function LotFullscreen({ lot, onClose }) {
         <div className="fs-price">
           Current bid: <b>{formatPrice(updatedLot.currentPrice)}</b>
           {updatedLot.currentBidder && (
-            <span className="fs-leader">Leader: {updatedLot.currentBidder}</span>
+            <span className="fs-leader">
+              Leader:
+              {updatedLot.currentBidderAvatar && (
+                <img
+                  src={updatedLot.currentBidderAvatar}
+                  alt={updatedLot.currentBidder}
+                  className="fs-leader-avatar"
+                />
+              )}
+              {updatedLot.currentBidder}
+            </span>
           )}
         </div>
 

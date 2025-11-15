@@ -105,9 +105,18 @@ function LotCard({ lot, onClick }) {
           {lot.currentBidder && (
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Лидер:</span>
-              <span className="text-white font-semibold">
-                {lot.currentBidder}
-              </span>
+              <div className="flex items-center gap-2">
+                {lot.currentBidderAvatar && (
+                  <img
+                    src={lot.currentBidderAvatar}
+                    alt={lot.currentBidder}
+                    className="w-5 h-5 rounded-full"
+                  />
+                )}
+                <span className="text-white font-semibold">
+                  {lot.currentBidder}
+                </span>
+              </div>
             </div>
           )}
 
