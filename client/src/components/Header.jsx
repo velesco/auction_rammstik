@@ -23,7 +23,7 @@ function Header() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <Link to="/" className="text-2xl font-bold text-white hover:text-green-400 transition-colors">
-              🎯 Виртуальный Аукцион
+              🎯 Mileage Riot | Аукцион
             </Link>
 
             <div className="flex items-center gap-4">
