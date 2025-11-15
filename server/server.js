@@ -462,11 +462,11 @@ setInterval(async () => {
         userQueries.update.run(
           hubUser.name,
           hubUser.email,
-          socket.user.discord_id, // Preserve OAuth data
-          socket.user.google_id,
-          socket.user.steam_id,
-          hubUser.avatar || socket.user.discord_avatar, // Use Hub avatar or preserve discord_avatar
-          socket.user.google_avatar,
+          socket.user.discord_id || null, // Preserve OAuth data, convert undefined to null
+          socket.user.google_id || null,
+          socket.user.steam_id || null,
+          hubUser.avatar || socket.user.discord_avatar || null,
+          socket.user.google_avatar || null,
           hubUser.isAdmin || hubUser.admin || false,
           hubUser.premium ?? 0, // Use ?? to allow premium = 0
           hubUser.balance ?? 0, // Use ?? to allow balance = 0
