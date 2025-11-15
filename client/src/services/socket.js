@@ -85,6 +85,12 @@ class SocketService {
     this.socket.on('bidRejected', ({ reason }) => {
       this.emit('bidRejected', { reason });
     });
+
+    // User update event (for role changes, balance updates, etc.)
+    this.socket.on('userUpdated', (user) => {
+      console.log('👤 User data updated from server:', user);
+      useAuthStore.getState().updateUser(user);
+    });
   }
 
   disconnect() {

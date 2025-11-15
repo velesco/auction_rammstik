@@ -7,7 +7,9 @@
       "Bash(C:UsersvelesDesktopauction_rammstikserverserver.js)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd real-time user role sync and deployment infrastructure\n\nFeatures:\n- Real-time admin role updates via Socket.io (30s interval check)\n- User data refresh on bid placement\n- GitHub-based deployment with automatic SSL setup\n- Deployment script for Ubuntu with PM2, Nginx, Certbot\n- Comprehensive deployment documentation\n\nTechnical changes:\n- Added userUpdated Socket.io event for instant role changes\n- Server checks user data changes every 30 seconds\n- Client auto-updates admin status without page refresh\n- Fixed UTC timezone handling for lot timers\n- Created deploy.sh with automated setup\n- Added DEPLOYMENT.md guide\n- Configured .gitignore for production files\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

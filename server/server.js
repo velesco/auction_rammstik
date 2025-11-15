@@ -352,6 +352,27 @@ app.delete('/api/admin/lots/:id', verifyToken, requireAdmin, (req, res) => {
 
 io.use(socketAuth);
 
+// Periodic user data sync (check for role changes, etc.)
+setInterval(() => {
+  const sockets = io.sockets.sockets;
+  sockets.forEach((socket) => {
+    if (socket.user && socket.user.id) {
+      const freshUser = userQueries.findById.get(socket.user.id);
+      if (freshUser) {
+        const freshUserData = publicUser(freshUser);
+        const currentUserData = publicUser(socket.user);
+
+        // Check if isAdmin status changed
+        if (freshUserData.isAdmin !== currentUserData.isAdmin) {
+          console.log(`👤 Admin status changed for ${freshUser.username}: ${currentUserData.isAdmin} -> ${freshUserData.isAdmin}`);
+          socket.user = freshUser; // Update socket.user
+          socket.emit('userUpdated', freshUserData);
+        }
+      }
+    }
+  });
+}, 30000); // Check every 30 seconds
+
 io.on('connection', (socket) => {
   console.log(`✅ User connected: ${socket.user.username} (ID: ${socket.user.id})`);
 
@@ -425,6 +446,12 @@ io.on('connection', (socket) => {
       io.emit('lotUpdated', publicLot(updatedLot));
 
       socket.emit('bidAccepted', { bidId: bid.id });
+
+      // Send updated user data (balance may have changed)
+      const freshUser = userQueries.findById.get(socket.user.id);
+      if (freshUser) {
+        socket.emit('userUpdated', publicUser(freshUser));
+      }
     } catch (error) {
       console.error('Error placing bid:', error);
       socket.emit('bidRejected', { reason: 'Failed to place bid' });
