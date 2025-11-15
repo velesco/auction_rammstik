@@ -5,7 +5,9 @@ import { formatTimeRemaining } from '../utils/formatTime';
 
 function LotCard({ lot, onClick }) {
   const [timeLeft, setTimeLeft] = useState('');
+  const [timeUntilStart, setTimeUntilStart] = useState('');
 
+  // Timer for active lots
   useEffect(() => {
     if (lot.status !== 'active') return;
 
@@ -17,6 +19,19 @@ function LotCard({ lot, onClick }) {
     const interval = setInterval(updateTimer, 250);
     return () => clearInterval(interval);
   }, [lot.endsAt, lot.status]);
+
+  // Timer for pending lots with scheduled start
+  useEffect(() => {
+    if (lot.status !== 'pending' || !lot.scheduledStart) return;
+
+    const updateTimer = () => {
+      setTimeUntilStart(formatTimeRemaining(lot.scheduledStart));
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 250);
+    return () => clearInterval(interval);
+  }, [lot.scheduledStart, lot.status]);
 
   const statusColors = {
     active: 'bg-green-500',
@@ -53,6 +68,11 @@ function LotCard({ lot, onClick }) {
           {lot.status === 'active' && timeLeft && (
             <span className="text-sm font-mono text-slate-300">
               {timeLeft}
+            </span>
+          )}
+          {lot.status === 'pending' && lot.scheduledStart && timeUntilStart && (
+            <span className="text-sm font-mono text-yellow-400">
+              Начнется через {timeUntilStart}
             </span>
           )}
         </div>

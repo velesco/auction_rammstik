@@ -38,6 +38,7 @@ function publicLot(lot) {
     minStep: lot.min_step,
     durationMinutes: lot.duration_minutes,
     createdAt: lot.created_at ? lot.created_at + 'Z' : null,
+    scheduledStart: lot.scheduled_start ? lot.scheduled_start + 'Z' : null,
     startedAt: lot.started_at ? lot.started_at + 'Z' : null,
     endsAt: lot.ends_at ? lot.ends_at + 'Z' : null,
     status: lot.status,
@@ -65,6 +66,39 @@ function publicUser(user) {
     balance: user.balance || 0
   };
 }
+
+// ===== Auto-start scheduled lots =====
+setInterval(() => {
+  const now = new Date();
+
+  // Find pending lots that should start now
+  const pendingLots = lotQueries.getByStatus.all('pending');
+
+  pendingLots.forEach(lot => {
+    if (lot.scheduled_start) {
+      const scheduledStart = new Date(lot.scheduled_start + 'Z');
+      if (now >= scheduledStart) {
+        console.log('🚀 Auto-starting scheduled lot:', { id: lot.id, title: lot.title });
+
+        // Calculate end time
+        const endsAt = new Date(now.getTime() + lot.duration_minutes * 60 * 1000);
+        const formatForSQLite = (date) => {
+          return date.toISOString().replace('T', ' ').substring(0, 19);
+        };
+
+        // Start the lot
+        lotQueries.start.run(
+          formatForSQLite(now),
+          formatForSQLite(endsAt),
+          lot.id
+        );
+
+        const updatedLot = lotQueries.findById.get(lot.id);
+        io.emit('lotUpdated', publicLot(updatedLot));
+      }
+    }
+  });
+}, 1000);
 
 // ===== Auto-expire lots timer =====
 setInterval(() => {
@@ -175,10 +209,17 @@ app.get('/api/lots/:id/bids', (req, res) => {
 // Create lot (admin only)
 app.post('/api/admin/lots', verifyToken, requireAdmin, (req, res) => {
   try {
-    const { title, description, imageUrl, startingPrice, minStep, durationMinutes } = req.body;
+    const { title, description, imageUrl, startingPrice, minStep, durationMinutes, scheduledStart } = req.body;
 
     if (!title || startingPrice === undefined || !minStep) {
       return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Format scheduled start time if provided
+    let formattedScheduledStart = null;
+    if (scheduledStart) {
+      const scheduledDate = new Date(scheduledStart);
+      formattedScheduledStart = scheduledDate.toISOString().replace('T', ' ').substring(0, 19);
     }
 
     const info = lotQueries.create.run(
@@ -188,6 +229,7 @@ app.post('/api/admin/lots', verifyToken, requireAdmin, (req, res) => {
       startingPrice,
       minStep,
       durationMinutes || 60,
+      formattedScheduledStart,
       req.user.id
     );
 
@@ -230,7 +272,18 @@ app.put('/api/admin/lots/:id', verifyToken, requireAdmin, (req, res) => {
       return res.status(400).json({ error: 'Cannot edit active or ended lot' });
     }
 
-    const { title, description, imageUrl, startingPrice, minStep } = req.body;
+    const { title, description, imageUrl, startingPrice, minStep, scheduledStart } = req.body;
+
+    // Format scheduled start time if provided
+    let formattedScheduledStart = lot.scheduled_start;
+    if (scheduledStart !== undefined) {
+      if (scheduledStart) {
+        const scheduledDate = new Date(scheduledStart);
+        formattedScheduledStart = scheduledDate.toISOString().replace('T', ' ').substring(0, 19);
+      } else {
+        formattedScheduledStart = null;
+      }
+    }
 
     lotQueries.update.run(
       title || lot.title,
@@ -238,6 +291,7 @@ app.put('/api/admin/lots/:id', verifyToken, requireAdmin, (req, res) => {
       imageUrl !== undefined ? imageUrl : lot.image_url,
       startingPrice !== undefined ? startingPrice : lot.starting_price,
       minStep !== undefined ? minStep : lot.min_step,
+      formattedScheduledStart,
       lot.id
     );
 

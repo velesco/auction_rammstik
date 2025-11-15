@@ -9,7 +9,8 @@ function AdminPanel({ lots }) {
     imageUrl: '',
     startingPrice: 100,
     minStep: 10,
-    durationMinutes: 60
+    durationMinutes: 60,
+    scheduledStart: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -18,7 +19,7 @@ function AdminPanel({ lots }) {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'title' || name === 'description' || name === 'imageUrl'
+      [name]: name === 'title' || name === 'description' || name === 'imageUrl' || name === 'scheduledStart'
         ? value
         : parseFloat(value) || 0
     }));
@@ -37,7 +38,8 @@ function AdminPanel({ lots }) {
         imageUrl: '',
         startingPrice: 100,
         minStep: 10,
-        durationMinutes: 60
+        durationMinutes: 60,
+        scheduledStart: ''
       });
       setShowCreateForm(false);
     } catch (err) {
@@ -184,6 +186,22 @@ function AdminPanel({ lots }) {
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-green-400 focus:outline-none"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm text-slate-400 mb-2">
+                Время запуска (опционально)
+              </label>
+              <input
+                type="datetime-local"
+                name="scheduledStart"
+                value={formData.scheduledStart}
+                onChange={handleInputChange}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-green-400 focus:outline-none"
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                Оставьте пустым для ручного запуска через кнопку "Запустить"
+              </p>
             </div>
 
             <button

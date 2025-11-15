@@ -42,6 +42,7 @@ function initDatabase() {
       min_step REAL NOT NULL DEFAULT 1,
       duration_minutes INTEGER NOT NULL DEFAULT 60,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      scheduled_start DATETIME,
       started_at DATETIME,
       ends_at DATETIME,
       status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'active', 'ended', 'cancelled')),
@@ -51,6 +52,14 @@ function initDatabase() {
       FOREIGN KEY (creator_id) REFERENCES users(id)
     )
   `);
+
+  // Add scheduled_start column if it doesn't exist (migration)
+  try {
+    db.exec(`ALTER TABLE lots ADD COLUMN scheduled_start DATETIME`);
+    console.log('✅ Added scheduled_start column to lots table');
+  } catch (e) {
+    // Column already exists, ignore
+  }
 
   // Bids table
   db.exec(`
@@ -117,12 +126,12 @@ export const lotQueries = {
   `),
   getByStatus: db.prepare('SELECT * FROM lots WHERE status = ? ORDER BY created_at DESC'),
   create: db.prepare(`
-    INSERT INTO lots (title, description, image_url, starting_price, min_step, duration_minutes, creator_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO lots (title, description, image_url, starting_price, min_step, duration_minutes, scheduled_start, creator_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `),
   update: db.prepare(`
     UPDATE lots
-    SET title = ?, description = ?, image_url = ?, starting_price = ?, min_step = ?
+    SET title = ?, description = ?, image_url = ?, starting_price = ?, min_step = ?, scheduled_start = ?
     WHERE id = ?
   `),
   updateStatus: db.prepare('UPDATE lots SET status = ? WHERE id = ?'),
