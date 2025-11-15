@@ -459,18 +459,33 @@ setInterval(async () => {
         const hubUser = await hubResponse.json();
 
         // Update local database - preserve OAuth fields, use nullish coalescing for premium/balance
+        // Ensure all values are SQLite-compatible (no undefined, booleans converted to 0/1)
+        const updateParams = {
+          name: hubUser.name || null,
+          email: hubUser.email || null,
+          discord_id: socket.user.discord_id || null,
+          google_id: socket.user.google_id || null,
+          steam_id: socket.user.steam_id || null,
+          discord_avatar: hubUser.avatar || socket.user.discord_avatar || null,
+          google_avatar: socket.user.google_avatar || null,
+          is_admin: (hubUser.isAdmin || hubUser.admin) ? 1 : 0, // Explicit 0/1 conversion
+          premium: hubUser.premium ?? 0,
+          balance: hubUser.balance ?? 0,
+          hub_user_id: socket.user.hub_user_id
+        };
+
         userQueries.update.run(
-          hubUser.name,
-          hubUser.email,
-          socket.user.discord_id || null, // Preserve OAuth data, convert undefined to null
-          socket.user.google_id || null,
-          socket.user.steam_id || null,
-          hubUser.avatar || socket.user.discord_avatar || null,
-          socket.user.google_avatar || null,
-          hubUser.isAdmin || hubUser.admin || false,
-          hubUser.premium ?? 0, // Use ?? to allow premium = 0
-          hubUser.balance ?? 0, // Use ?? to allow balance = 0
-          socket.user.hub_user_id
+          updateParams.name,
+          updateParams.email,
+          updateParams.discord_id,
+          updateParams.google_id,
+          updateParams.steam_id,
+          updateParams.discord_avatar,
+          updateParams.google_avatar,
+          updateParams.is_admin,
+          updateParams.premium,
+          updateParams.balance,
+          updateParams.hub_user_id
         );
 
         // Get updated user from database
@@ -496,6 +511,13 @@ setInterval(async () => {
         }
       } catch (error) {
         console.error(`Error syncing user ${socket.user.username}:`, error.message);
+        console.error('Debug info:', {
+          hubUserId: socket.user?.hub_user_id,
+          socketUserFields: socket.user ? Object.keys(socket.user).reduce((acc, key) => {
+            acc[key] = typeof socket.user[key];
+            return acc;
+          }, {}) : 'no socket.user'
+        });
       }
     }
   }

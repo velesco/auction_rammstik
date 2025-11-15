@@ -55,18 +55,18 @@ export async function verifyToken(req, res, next) {
       );
       user = userQueries.findByHubId.get(hubUser.id);
     } else {
-      // Update existing user
+      // Update existing user - ensure all values are SQLite-compatible
       userQueries.update.run(
-        hubUser.username || hubUser.name || user.username,
-        hubUser.email || user.email,
-        hubUser.discord_id || user.discord_id,
-        hubUser.google_id || user.google_id,
-        hubUser.steam_id || user.steam_id,
-        hubUser.discord_avatar || user.discord_avatar,
-        hubUser.google_avatar || user.google_avatar,
-        isAdmin ? 1 : 0,
-        hubUser.premium ?? user.premium, // Fix: Use ?? to allow premium = 0
-        hubUser.balance ?? user.balance ?? 0, // Fix: Use ?? to allow balance = 0
+        hubUser.username || hubUser.name || user.username || null,
+        hubUser.email || user.email || null,
+        hubUser.discord_id || user.discord_id || null,
+        hubUser.google_id || user.google_id || null,
+        hubUser.steam_id || user.steam_id || null,
+        hubUser.discord_avatar || user.discord_avatar || null,
+        hubUser.google_avatar || user.google_avatar || null,
+        isAdmin ? 1 : 0, // Explicit 0/1 conversion
+        hubUser.premium ?? user.premium ?? 0, // Use ?? to allow premium = 0
+        hubUser.balance ?? user.balance ?? 0, // Use ?? to allow balance = 0
         hubUser.id
       );
       user = userQueries.findByHubId.get(hubUser.id);
@@ -143,18 +143,18 @@ export async function socketAuth(socket, next) {
       );
       user = userQueries.findByHubId.get(hubUser.id);
     } else {
-      // Update user data
+      // Update user data - ensure all values are SQLite-compatible
       userQueries.update.run(
-        hubUser.username || hubUser.name || user.username,
-        hubUser.email || user.email,
-        hubUser.discord_id || user.discord_id,
-        hubUser.google_id || user.google_id,
-        hubUser.steam_id || user.steam_id,
-        hubUser.discord_avatar || user.discord_avatar,
-        hubUser.google_avatar || user.google_avatar,
-        isAdmin ? 1 : 0,
-        hubUser.premium ?? user.premium, // Fix: Use ?? to allow premium = 0
-        hubUser.balance ?? user.balance ?? 0, // Fix: Use ?? to allow balance = 0
+        hubUser.username || hubUser.name || user.username || null,
+        hubUser.email || user.email || null,
+        hubUser.discord_id || user.discord_id || null,
+        hubUser.google_id || user.google_id || null,
+        hubUser.steam_id || user.steam_id || null,
+        hubUser.discord_avatar || user.discord_avatar || null,
+        hubUser.google_avatar || user.google_avatar || null,
+        isAdmin ? 1 : 0, // Explicit 0/1 conversion
+        hubUser.premium ?? user.premium ?? 0, // Use ?? to allow premium = 0
+        hubUser.balance ?? user.balance ?? 0, // Use ?? to allow balance = 0
         hubUser.id
       );
       user = userQueries.findByHubId.get(hubUser.id);
