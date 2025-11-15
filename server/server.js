@@ -440,32 +440,65 @@ app.delete('/api/admin/lots/:id', verifyToken, requireAdmin, (req, res) => {
 io.use(socketAuth);
 
 // Periodic user data sync (check for role changes, etc.)
-setInterval(() => {
+setInterval(async () => {
   const sockets = io.sockets.sockets;
-  sockets.forEach((socket) => {
-    if (socket.user && socket.user.id) {
-      const freshUser = userQueries.findById.get(socket.user.id);
-      if (freshUser) {
-        const freshUserData = publicUser(freshUser);
-        const currentUserData = publicUser(socket.user);
 
-        // Check if isAdmin or premium status changed
-        const adminChanged = freshUserData.isAdmin !== currentUserData.isAdmin;
-        const premiumChanged = freshUserData.premium !== currentUserData.premium;
+  for (const socket of sockets.values()) {
+    if (socket.user && socket.user.hub_user_id) {
+      try {
+        // Fetch fresh data from Hub API
+        const hubResponse = await fetch(`${process.env.HUB_API_URL}/oauth/user`, {
+          headers: {
+            'Authorization': `Bearer ${socket.handshake.auth.token}`,
+            'Accept': 'application/json'
+          }
+        });
 
-        if (adminChanged || premiumChanged) {
-          if (adminChanged) {
-            console.log(`👤 Admin status changed for ${freshUser.username}: ${currentUserData.isAdmin} -> ${freshUserData.isAdmin}`);
+        if (!hubResponse.ok) continue;
+
+        const hubUser = await hubResponse.json();
+
+        // Update local database
+        userQueries.update.run(
+          hubUser.name,
+          hubUser.email,
+          null, // discord_id
+          null, // google_id
+          null, // steam_id
+          hubUser.avatar || null,
+          null, // google_avatar
+          hubUser.isAdmin || hubUser.admin || false,
+          hubUser.premium || 0,
+          hubUser.balance || 0,
+          socket.user.hub_user_id
+        );
+
+        // Get updated user from database
+        const freshUser = userQueries.findByHubId.get(socket.user.hub_user_id);
+        if (freshUser) {
+          const freshUserData = publicUser(freshUser);
+          const currentUserData = publicUser(socket.user);
+
+          // Check if isAdmin or premium status changed
+          const adminChanged = freshUserData.isAdmin !== currentUserData.isAdmin;
+          const premiumChanged = freshUserData.premium !== currentUserData.premium;
+
+          if (adminChanged || premiumChanged) {
+            if (adminChanged) {
+              console.log(`👤 Admin status changed for ${freshUser.username}: ${currentUserData.isAdmin} -> ${freshUserData.isAdmin}`);
+            }
+            if (premiumChanged) {
+              console.log(`🌟 Premium status changed for ${freshUser.username}: ${currentUserData.premium} -> ${freshUserData.premium}`);
+            }
+            socket.user = freshUser; // Update socket.user
+            socket.emit('userUpdated', freshUserData);
           }
-          if (premiumChanged) {
-            console.log(`🌟 Premium status changed for ${freshUser.username}: ${currentUserData.premium} -> ${freshUserData.premium}`);
-          }
-          socket.user = freshUser; // Update socket.user
-          socket.emit('userUpdated', freshUserData);
         }
+      } catch (error) {
+        console.error(`Error syncing user ${socket.user.username}:`, error.message);
       }
     }
-  });
+  }
 }, 30000); // Check every 30 seconds
 
 io.on('connection', (socket) => {
