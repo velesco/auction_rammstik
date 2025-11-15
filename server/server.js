@@ -191,22 +191,7 @@ app.post('/api/admin/lots', verifyToken, requireAdmin, (req, res) => {
       req.user.id
     );
 
-    // Calculate start and end times in JavaScript (UTC)
-    const now = new Date();
-    const endsAt = new Date(now.getTime() + (durationMinutes || 60) * 60 * 1000);
-
-    // Format as ISO string without 'Z' for SQLite (YYYY-MM-DD HH:MM:SS)
-    const formatForSQLite = (date) => {
-      return date.toISOString().replace('T', ' ').substring(0, 19);
-    };
-
-    // Automatically start the lot with calculated times
-    lotQueries.start.run(
-      formatForSQLite(now),
-      formatForSQLite(endsAt),
-      info.lastInsertRowid
-    );
-
+    // Don't auto-start - let admin start manually
     const lot = lotQueries.findById.get(info.lastInsertRowid);
 
     // Debug logging
@@ -281,10 +266,33 @@ app.post('/api/admin/lots/:id/start', verifyToken, requireAdmin, (req, res) => {
       return res.status(400).json({ error: 'Lot already started or ended' });
     }
 
-    lotQueries.start.run(lot.id);
+    // Calculate start and end times in JavaScript (UTC)
+    const now = new Date();
+    const endsAt = new Date(now.getTime() + lot.duration_minutes * 60 * 1000);
+
+    // Format as ISO string without 'Z' for SQLite (YYYY-MM-DD HH:MM:SS)
+    const formatForSQLite = (date) => {
+      return date.toISOString().replace('T', ' ').substring(0, 19);
+    };
+
+    // Start the lot with calculated times
+    lotQueries.start.run(
+      formatForSQLite(now),
+      formatForSQLite(endsAt),
+      lot.id
+    );
 
     const updatedLot = lotQueries.findById.get(lot.id);
     const publicLotData = publicLot(updatedLot);
+
+    console.log('▶️ Lot started:', {
+      id: lot.id,
+      title: lot.title,
+      duration_minutes: lot.duration_minutes,
+      started_at: updatedLot.started_at,
+      ends_at: updatedLot.ends_at,
+      status: updatedLot.status
+    });
 
     io.emit('lotUpdated', publicLotData);
 
