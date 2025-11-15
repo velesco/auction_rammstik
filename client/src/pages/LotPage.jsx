@@ -8,6 +8,9 @@ import socketService from '../services/socket';
 import Confetti from 'react-confetti';
 import Header from '../components/Header';
 import { formatTimeRemaining } from '../utils/formatTime';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 function LotPage() {
   const { id } = useParams();
@@ -23,8 +26,11 @@ function LotPage() {
   const [lastBid, setLastBid] = useState(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [error, setError] = useState('');
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
 
   const audioContextRef = useRef(null);
+  const chatEndRef = useRef(null);
 
   // Timer
   useEffect(() => {
@@ -90,6 +96,45 @@ function LotPage() {
     }
   }, [settings.sound]);
 
+  // Load chat messages
+  useEffect(() => {
+    const loadChatMessages = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/lots/${id}/chat`);
+        setChatMessages(response.data);
+      } catch (error) {
+        console.error('Failed to load chat messages:', error);
+      }
+    };
+
+    loadChatMessages();
+  }, [id]);
+
+  // Listen for new chat messages
+  useEffect(() => {
+    const handleNewChatMessage = (message) => {
+      if (message.lotId === Number(id)) {
+        setChatMessages(prev => [...prev, message]);
+        setTimeout(() => {
+          chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    };
+
+    const handleChatError = ({ reason }) => {
+      setError(reason);
+      setTimeout(() => setError(''), 3000);
+    };
+
+    socketService.on('newChatMessage', handleNewChatMessage);
+    socketService.on('chatError', handleChatError);
+
+    return () => {
+      socketService.off('newChatMessage', handleNewChatMessage);
+      socketService.off('chatError', handleChatError);
+    };
+  }, [id]);
+
   const playBeep = () => {
     if (!audioContextRef.current) return;
 
@@ -126,6 +171,14 @@ function LotPage() {
       return;
     }
     socketService.socket.emit('deleteBid', { bidId, lotId: Number(id) });
+  };
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (chatInput.trim()) {
+      socketService.sendChatMessage(Number(id), chatInput.trim());
+      setChatInput('');
+    }
   };
 
   if (!lot) {
@@ -380,6 +433,55 @@ function LotPage() {
                   Ставок пока нет. Будьте первым!
                 </div>
               )}
+            </div>
+
+            {/* Chat */}
+            <div className="bg-card rounded-2xl p-6 border border-slate-700">
+              <h2 className="text-2xl font-bold text-white mb-6">Чат ({chatMessages.length})</h2>
+
+              <div className="space-y-3 max-h-[400px] overflow-y-auto mb-4 p-3 bg-slate-900 rounded-lg">
+                {chatMessages.length > 0 ? (
+                  chatMessages.map(msg => (
+                    <div key={msg.id} className="flex gap-3">
+                      {msg.avatar && (
+                        <img src={msg.avatar} alt={msg.username} className="w-10 h-10 rounded-full flex-shrink-0 border-2 border-green-400" />
+                      )}
+                      <div className="flex-1 bg-slate-800 p-3 rounded-lg border border-slate-700">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-bold text-green-400 text-sm">{msg.username}</span>
+                          <span className="text-xs text-slate-400">
+                            {new Date(msg.createdAt).toLocaleTimeString()}
+                          </span>
+                        </div>
+                        <div className="text-slate-200 text-sm">{msg.message}</div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-slate-400">
+                    Пока нет сообщений. Начните общение!
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              <form onSubmit={handleSendMessage} className="flex gap-2">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="Написать сообщение..."
+                  maxLength={500}
+                  className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-green-400"
+                />
+                <button
+                  type="submit"
+                  disabled={!chatInput.trim()}
+                  className="px-6 py-3 bg-green-500 hover:bg-green-600 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-colors"
+                >
+                  Отправить
+                </button>
+              </form>
             </div>
           </div>
         </div>
