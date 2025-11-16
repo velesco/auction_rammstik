@@ -246,36 +246,36 @@ function LotPage() {
         />
       )}
 
-      <main className="container mx-auto px-4 py-8 mt-2">
+      <main className="container mx-auto px-3 md:px-4 py-4 md:py-8 mt-2">
         <button
           onClick={() => navigate('/')}
-          className="mb-6 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors flex items-center gap-2"
+          className="mb-4 md:mb-6 px-3 md:px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors flex items-center gap-2 text-sm md:text-base"
         >
           ← Назад к аукционам
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
           {/* Left Column - Image and Info */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {lot.imageUrl && (
-              <div className="bg-slate-900 rounded-2xl overflow-hidden border border-slate-700">
+              <div className="bg-slate-900 rounded-xl md:rounded-2xl overflow-hidden border border-slate-700">
                 <img
                   src={lot.imageUrl}
                   alt={lot.title}
-                  className="w-full h-auto object-contain max-h-[600px]"
+                  className="w-full h-auto object-contain max-h-[400px] md:max-h-[600px]"
                 />
               </div>
             )}
 
-            <div className="bg-card rounded-2xl p-6 border border-slate-700">
-              <div className="flex items-center justify-between mb-4">
-                <span className={`px-3 py-1 rounded-lg text-sm font-bold text-slate-900 ${statusColors[lot.status]}`}>
+            <div className="bg-card rounded-xl md:rounded-2xl p-4 md:p-6 border border-slate-700">
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <span className={`px-2 md:px-3 py-1 rounded-lg text-xs md:text-sm font-bold text-slate-900 ${statusColors[lot.status]}`}>
                   {statusLabels[lot.status]}
                 </span>
                 {lot.status === 'active' && timeLeft && (
                   <div className="text-center">
                     <div className="text-xs text-slate-400 mb-1">Осталось</div>
-                    <span className="text-2xl font-mono font-bold text-green-400">
+                    <span className="text-lg md:text-2xl font-mono font-bold text-green-400">
                       {timeLeft}
                     </span>
                   </div>
@@ -283,35 +283,35 @@ function LotPage() {
                 {lot.status === 'pending' && timeLeft && (
                   <div className="text-center">
                     <div className="text-xs text-slate-400 mb-1">Начало через</div>
-                    <span className="text-2xl font-mono font-bold text-yellow-400">
+                    <span className="text-lg md:text-2xl font-mono font-bold text-yellow-400">
                       {timeLeft}
                     </span>
                   </div>
                 )}
               </div>
 
-              <h1 className="text-4xl font-bold text-white mb-4">{lot.title}</h1>
+              <h1 className="text-2xl md:text-4xl font-bold text-white mb-3 md:mb-4">{lot.title}</h1>
 
               {lot.description && (
-                <p className="text-lg text-slate-300 mb-6">{lot.description}</p>
+                <p className="text-base md:text-lg text-slate-300 mb-4 md:mb-6">{lot.description}</p>
               )}
 
-              <div className="space-y-3">
-                <div className="flex justify-between items-center p-4 bg-slate-900 rounded-lg">
-                  <span className="text-slate-400 text-lg">Начальная цена:</span>
-                  <span className="text-white font-bold text-xl">{lot.startingPrice} M¢</span>
+              <div className="space-y-2 md:space-y-3">
+                <div className="flex justify-between items-center p-3 md:p-4 bg-slate-900 rounded-lg">
+                  <span className="text-slate-400 text-sm md:text-lg">Начальная цена:</span>
+                  <span className="text-white font-bold text-base md:text-xl">{lot.startingPrice} M¢</span>
                 </div>
 
-                <div className="flex justify-between items-center p-4 bg-slate-900 rounded-lg">
-                  <span className="text-slate-400 text-lg">Текущая цена:</span>
-                  <span className="text-green-400 font-bold text-2xl">
+                <div className="flex justify-between items-center p-3 md:p-4 bg-slate-900 rounded-lg">
+                  <span className="text-slate-400 text-sm md:text-lg">Текущая цена:</span>
+                  <span className="text-green-400 font-bold text-xl md:text-2xl">
                     {lot.currentPrice || lot.startingPrice} M¢
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center p-4 bg-slate-900 rounded-lg">
-                  <span className="text-slate-400 text-lg">Минимальный шаг:</span>
-                  <span className="text-white font-bold text-xl">{lot.minStep} M¢</span>
+                <div className="flex justify-between items-center p-3 md:p-4 bg-slate-900 rounded-lg">
+                  <span className="text-slate-400 text-sm md:text-lg">Минимальный шаг:</span>
+                  <span className="text-white font-bold text-base md:text-xl">{lot.minStep} M¢</span>
                 </div>
 
                 {lot.currentBidder && (
@@ -339,21 +339,21 @@ function LotPage() {
           </div>
 
           {/* Right Column - Bidding and History */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {/* Bidding Form */}
             {lot.status === 'active' && (
-              <div className="bg-card rounded-2xl p-6 border border-slate-700">
-                <h2 className="text-2xl font-bold text-white mb-6">Сделать ставку</h2>
+              <div className="bg-card rounded-xl md:rounded-2xl p-4 md:p-6 border border-slate-700">
+                <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">Сделать ставку</h2>
 
                 {error && (
-                  <div className="mb-4 p-4 bg-red-500/20 border border-red-500 rounded-lg text-red-400">
+                  <div className="mb-4 p-3 md:p-4 bg-red-500/20 border border-red-500 rounded-lg text-red-400 text-sm md:text-base">
                     {error}
                   </div>
                 )}
 
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-400 mb-2">
+                    <label className="block text-xs md:text-sm font-medium text-slate-400 mb-2">
                       Ваша ставка (минимум: {(lot.currentPrice || lot.startingPrice) + lot.minStep} M¢)
                     </label>
                     <input
@@ -363,37 +363,37 @@ function LotPage() {
                       step={lot.minStep}
                       min={(lot.currentPrice || lot.startingPrice) + lot.minStep}
                       max={user?.balance || 0}
-                      className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white text-xl font-bold focus:outline-none focus:border-green-400"
+                      className="w-full px-3 md:px-4 py-2 md:py-3 bg-slate-900 border border-slate-700 rounded-lg text-white text-lg md:text-xl font-bold focus:outline-none focus:border-green-400"
                     />
                   </div>
 
                   {/* Quick bid multiplier buttons */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-400 mb-2">
+                    <label className="block text-xs md:text-sm font-medium text-slate-400 mb-2">
                       Быстрая ставка:
                     </label>
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="grid grid-cols-4 gap-1.5 md:gap-2">
                       <button
                         onClick={() => setBidAmount(((lot.currentPrice || lot.startingPrice) + lot.minStep * 2).toString())}
-                        className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors"
+                        className="px-2 md:px-3 py-1.5 md:py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors text-xs md:text-base"
                       >
                         x2
                       </button>
                       <button
                         onClick={() => setBidAmount(((lot.currentPrice || lot.startingPrice) + lot.minStep * 3).toString())}
-                        className="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors"
+                        className="px-2 md:px-3 py-1.5 md:py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors text-xs md:text-base"
                       >
                         x3
                       </button>
                       <button
                         onClick={() => setBidAmount(((lot.currentPrice || lot.startingPrice) + lot.minStep * 5).toString())}
-                        className="px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors"
+                        className="px-2 md:px-3 py-1.5 md:py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors text-xs md:text-base"
                       >
                         x5
                       </button>
                       <button
                         onClick={() => setBidAmount(((lot.currentPrice || lot.startingPrice) + lot.minStep * 10).toString())}
-                        className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors"
+                        className="px-2 md:px-3 py-1.5 md:py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors text-xs md:text-base"
                       >
                         x10
                       </button>
@@ -402,12 +402,12 @@ function LotPage() {
 
                   <button
                     onClick={handlePlaceBid}
-                    className="w-full px-6 py-4 bg-green-500 hover:bg-green-600 text-white font-bold text-xl rounded-lg transition-colors transform hover:scale-105"
+                    className="w-full px-4 md:px-6 py-3 md:py-4 bg-green-500 hover:bg-green-600 text-white font-bold text-lg md:text-xl rounded-lg transition-colors transform hover:scale-105"
                   >
                     Сделать ставку
                   </button>
 
-                  <div className="text-center text-sm text-slate-400">
+                  <div className="text-center text-xs md:text-sm text-slate-400">
                     Ваш баланс: <span className="font-bold text-green-400">{user?.balance?.toFixed(2) || 0} M¢</span>
                   </div>
                 </div>
@@ -415,8 +415,8 @@ function LotPage() {
             )}
 
             {/* Bid History */}
-            <div className="bg-card rounded-2xl p-6 border border-slate-700">
-              <h2 className="text-2xl font-bold text-white mb-6">История ставок</h2>
+            <div className="bg-card rounded-xl md:rounded-2xl p-4 md:p-6 border border-slate-700">
+              <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">История ставок</h2>
 
               {lot.bids && lot.bids.length > 0 ? (
                 <div className="space-y-2 max-h-[600px] overflow-y-auto">
@@ -469,29 +469,29 @@ function LotPage() {
             </div>
 
             {/* Chat */}
-            <div className="bg-card rounded-2xl p-6 border border-slate-700">
-              <h2 className="text-2xl font-bold text-white mb-6">Чат ({chatMessages.length})</h2>
+            <div className="bg-card rounded-xl md:rounded-2xl p-4 md:p-6 border border-slate-700">
+              <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">Чат ({chatMessages.length})</h2>
 
-              <div className="space-y-3 max-h-[400px] overflow-y-auto mb-4 p-3 bg-slate-900 rounded-lg">
+              <div className="space-y-2 md:space-y-3 max-h-[300px] md:max-h-[400px] overflow-y-auto mb-3 md:mb-4 p-2 md:p-3 bg-slate-900 rounded-lg">
                 {chatMessages.length > 0 ? (
                   chatMessages.map(msg => (
-                    <div key={msg.id} className="flex gap-3">
+                    <div key={msg.id} className="flex gap-2 md:gap-3">
                       {msg.avatar && (
-                        <img src={msg.avatar} alt={msg.username} className="w-10 h-10 rounded-full flex-shrink-0 border-2 border-green-400" />
+                        <img src={msg.avatar} alt={msg.username} className="w-8 h-8 md:w-10 md:h-10 rounded-full flex-shrink-0 border-2 border-green-400" />
                       )}
-                      <div className="flex-1 bg-slate-800 p-3 rounded-lg border border-slate-700">
+                      <div className="flex-1 bg-slate-800 p-2 md:p-3 rounded-lg border border-slate-700">
                         <div className="flex justify-between items-center mb-1">
-                          <span className="font-bold text-green-400 text-sm">{msg.username}</span>
-                          <span className="text-xs text-slate-400">
+                          <span className="font-bold text-green-400 text-xs md:text-sm">{msg.username}</span>
+                          <span className="text-[10px] md:text-xs text-slate-400">
                             {new Date(msg.createdAt).toLocaleTimeString()}
                           </span>
                         </div>
-                        <div className="text-slate-200 text-sm">{msg.message}</div>
+                        <div className="text-slate-200 text-xs md:text-sm break-words">{msg.message}</div>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-slate-400">
+                  <div className="text-center py-6 md:py-8 text-slate-400 text-sm md:text-base">
                     Пока нет сообщений. Начните общение!
                   </div>
                 )}
@@ -505,14 +505,15 @@ function LotPage() {
                   onChange={(e) => setChatInput(e.target.value)}
                   placeholder="Написать сообщение..."
                   maxLength={500}
-                  className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-green-400"
+                  className="flex-1 px-3 md:px-4 py-2 md:py-3 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm md:text-base focus:outline-none focus:border-green-400"
                 />
                 <button
                   type="submit"
                   disabled={!chatInput.trim()}
-                  className="px-6 py-3 bg-green-500 hover:bg-green-600 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-colors"
+                  className="px-3 md:px-6 py-2 md:py-3 bg-green-500 hover:bg-green-600 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-colors text-sm md:text-base"
                 >
-                  Отправить
+                  <span className="hidden sm:inline">Отправить</span>
+                  <span className="sm:hidden">➤</span>
                 </button>
               </form>
             </div>
@@ -522,16 +523,16 @@ function LotPage() {
 
       {/* New Bid Banner */}
       {showBanner && lastBid && (
-        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-50 animate-bounce">
-          <div className="bg-green-500 text-white px-8 py-4 rounded-2xl shadow-2xl border-4 border-white">
+        <div className="fixed top-16 md:top-24 left-1/2 transform -translate-x-1/2 z-50 animate-bounce px-4">
+          <div className="bg-green-500 text-white px-4 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl shadow-2xl border-2 md:border-4 border-white">
             <div className="text-center">
-              <div className="text-sm font-semibold mb-1">Новая ставка!</div>
-              <div className="flex items-center gap-3">
+              <div className="text-xs md:text-sm font-semibold mb-1">Новая ставка!</div>
+              <div className="flex items-center gap-2 md:gap-3">
                 {lastBid.avatar && (
-                  <img src={lastBid.avatar} alt={lastBid.username} className="w-8 h-8 rounded-full" />
+                  <img src={lastBid.avatar} alt={lastBid.username} className="w-6 h-6 md:w-8 md:h-8 rounded-full" />
                 )}
-                <span className="font-bold text-lg">{lastBid.username}</span>
-                <span className="text-2xl font-bold">{lastBid.amount} M¢</span>
+                <span className="font-bold text-sm md:text-lg">{lastBid.username}</span>
+                <span className="text-lg md:text-2xl font-bold">{lastBid.amount} M¢</span>
               </div>
             </div>
           </div>

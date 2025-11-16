@@ -20,41 +20,44 @@ function Header() {
   return (
     <>
       <header className="bg-card border-b border-slate-700 sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <Link to="/" className="text-2xl font-bold text-white hover:text-green-400 transition-colors">
-              🎯 Mileage Riot | Аукцион
+        <div className="container mx-auto px-4 py-3 md:py-4">
+          <div className="flex items-center justify-between gap-2 md:gap-4">
+            <Link to="/" className="text-lg md:text-2xl font-bold text-white hover:text-green-400 transition-colors">
+              <span className="hidden sm:inline">🎯 Mileage Riot | Аукцион</span>
+              <span className="sm:hidden">🎯 MR</span>
             </Link>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
               {isAdmin && (
                 <Link
                   to="/admin"
-                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-slate-900 font-semibold rounded-lg transition-colors"
+                  className="px-2 py-1.5 md:px-4 md:py-2 bg-yellow-500 hover:bg-yellow-600 text-slate-900 font-semibold rounded-lg transition-colors text-sm md:text-base"
                 >
-                  Админ-панель
+                  <span className="hidden sm:inline">Админ-панель</span>
+                  <span className="sm:hidden">Админ</span>
                 </Link>
               )}
 
               {isAdmin && (
                 <button
                   onClick={() => setShowSettings(true)}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                  className="px-2 py-1.5 md:px-4 md:py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors text-sm md:text-base"
                 >
-                  ⚙️ Настройки
+                  <span className="hidden sm:inline">⚙️ Настройки</span>
+                  <span className="sm:hidden">⚙️</span>
                 </button>
               )}
 
-              <div className="flex items-center gap-3 bg-slate-900 rounded-lg px-4 py-2 border border-slate-700">
+              <div className="flex items-center gap-2 md:gap-3 bg-slate-900 rounded-lg px-2 py-1.5 md:px-4 md:py-2 border border-slate-700">
                 {user?.avatar && (
                   <img
                     src={user.avatar}
                     alt={user.username}
-                    className="w-10 h-10 rounded-full border-2 border-green-400"
+                    className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-green-400"
                   />
                 )}
-                <div>
-                  <div className="text-white font-semibold">{user?.username}</div>
+                <div className="hidden sm:block">
+                  <div className="text-white font-semibold text-sm md:text-base">{user?.username}</div>
                   <div className="flex items-center gap-2 text-xs">
                     {isAdmin && (
                       <span className="text-yellow-400 font-semibold">Admin</span>
@@ -73,9 +76,10 @@ function Header() {
 
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors"
+                className="px-2 py-1.5 md:px-4 md:py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors text-sm md:text-base"
               >
-                Выйти
+                <span className="hidden sm:inline">Выйти</span>
+                <span className="sm:hidden">✕</span>
               </button>
             </div>
           </div>
