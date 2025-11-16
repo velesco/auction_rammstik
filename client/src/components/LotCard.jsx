@@ -22,16 +22,34 @@ function LotCard({ lot, onClick }) {
 
   // Timer for pending lots with scheduled start
   useEffect(() => {
-    if (lot.status !== 'pending' || !lot.scheduledStart) return;
+    if (lot.status !== 'pending' || !lot.startedAt) return;
 
     const updateTimer = () => {
-      setTimeUntilStart(formatTimeRemaining(lot.scheduledStart));
+      const now = Date.now();
+      const start = new Date(lot.startedAt).getTime();
+      const diff = start - now;
+
+      if (diff <= 0) {
+        setTimeUntilStart('Начинается...');
+      } else {
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        if (hours > 0) {
+          setTimeUntilStart(`${hours}ч ${minutes}м ${seconds}с`);
+        } else if (minutes > 0) {
+          setTimeUntilStart(`${minutes}м ${seconds}с`);
+        } else {
+          setTimeUntilStart(`${seconds}с`);
+        }
+      }
     };
 
     updateTimer();
     const interval = setInterval(updateTimer, 250);
     return () => clearInterval(interval);
-  }, [lot.scheduledStart, lot.status]);
+  }, [lot.startedAt, lot.status]);
 
   const statusColors = {
     active: 'bg-green-500',
@@ -70,9 +88,9 @@ function LotCard({ lot, onClick }) {
               {timeLeft}
             </span>
           )}
-          {lot.status === 'pending' && lot.scheduledStart && timeUntilStart && (
+          {lot.status === 'pending' && lot.startedAt && timeUntilStart && (
             <span className="text-sm font-mono text-yellow-400">
-              Начнется через {timeUntilStart}
+              {timeUntilStart}
             </span>
           )}
         </div>
