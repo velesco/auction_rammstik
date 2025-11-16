@@ -37,10 +37,6 @@ export async function verifyToken(req, res, next) {
 
     if (!user) {
       // Create new user
-      // Use generic avatar field from Hub, store based on OAuth provider
-      const discordAvatar = hubUser.discord_id ? (hubUser.avatar || hubUser.discord_avatar || null) : null;
-      const googleAvatar = hubUser.google_id ? (hubUser.avatar || hubUser.google_avatar || null) : null;
-
       userQueries.create.run(
         hubUser.id,
         hubUser.username || hubUser.name || 'User',
@@ -48,8 +44,9 @@ export async function verifyToken(req, res, next) {
         hubUser.discord_id || null,
         hubUser.google_id || null,
         hubUser.steam_id || null,
-        discordAvatar,
-        googleAvatar,
+        hubUser.avatar || null, // Generic avatar from Hub
+        hubUser.discord_avatar || null,
+        hubUser.google_avatar || null,
         isAdmin ? 1 : 0,
         hubUser.premium || 0,
         hubUser.balance || 0
@@ -57,18 +54,15 @@ export async function verifyToken(req, res, next) {
       user = userQueries.findByHubId.get(hubUser.id);
     } else {
       // Update existing user - ensure all values are SQLite-compatible
-      // Use generic avatar field from Hub, update based on OAuth provider
-      const discordAvatar = hubUser.discord_id ? (hubUser.avatar || hubUser.discord_avatar || user.discord_avatar || null) : (user.discord_avatar || null);
-      const googleAvatar = hubUser.google_id ? (hubUser.avatar || hubUser.google_avatar || user.google_avatar || null) : (user.google_avatar || null);
-
       userQueries.update.run(
         hubUser.username || hubUser.name || user.username || null,
         hubUser.email || user.email || null,
         hubUser.discord_id || user.discord_id || null,
         hubUser.google_id || user.google_id || null,
         hubUser.steam_id || user.steam_id || null,
-        discordAvatar,
-        googleAvatar,
+        hubUser.avatar || user.avatar || null, // Generic avatar from Hub
+        hubUser.discord_avatar || user.discord_avatar || null,
+        hubUser.google_avatar || user.google_avatar || null,
         isAdmin ? 1 : 0, // Explicit 0/1 conversion
         hubUser.premium ?? user.premium ?? 0, // Use ?? to allow premium = 0
         hubUser.balance ?? user.balance ?? 0, // Use ?? to allow balance = 0
@@ -134,10 +128,6 @@ export async function socketAuth(socket, next) {
 
     if (!user) {
       // Create new user
-      // Use generic avatar field from Hub, store based on OAuth provider
-      const discordAvatar = hubUser.discord_id ? (hubUser.avatar || hubUser.discord_avatar || null) : null;
-      const googleAvatar = hubUser.google_id ? (hubUser.avatar || hubUser.google_avatar || null) : null;
-
       userQueries.create.run(
         hubUser.id,
         hubUser.username || hubUser.name || 'User',
@@ -145,8 +135,9 @@ export async function socketAuth(socket, next) {
         hubUser.discord_id || null,
         hubUser.google_id || null,
         hubUser.steam_id || null,
-        discordAvatar,
-        googleAvatar,
+        hubUser.avatar || null, // Generic avatar from Hub
+        hubUser.discord_avatar || null,
+        hubUser.google_avatar || null,
         isAdmin ? 1 : 0,
         hubUser.premium || 0,
         hubUser.balance || 0
@@ -154,18 +145,15 @@ export async function socketAuth(socket, next) {
       user = userQueries.findByHubId.get(hubUser.id);
     } else {
       // Update user data - ensure all values are SQLite-compatible
-      // Use generic avatar field from Hub, update based on OAuth provider
-      const discordAvatar = hubUser.discord_id ? (hubUser.avatar || hubUser.discord_avatar || user.discord_avatar || null) : (user.discord_avatar || null);
-      const googleAvatar = hubUser.google_id ? (hubUser.avatar || hubUser.google_avatar || user.google_avatar || null) : (user.google_avatar || null);
-
       userQueries.update.run(
         hubUser.username || hubUser.name || user.username || null,
         hubUser.email || user.email || null,
         hubUser.discord_id || user.discord_id || null,
         hubUser.google_id || user.google_id || null,
         hubUser.steam_id || user.steam_id || null,
-        discordAvatar,
-        googleAvatar,
+        hubUser.avatar || user.avatar || null, // Generic avatar from Hub
+        hubUser.discord_avatar || user.discord_avatar || null,
+        hubUser.google_avatar || user.google_avatar || null,
         isAdmin ? 1 : 0, // Explicit 0/1 conversion
         hubUser.premium ?? user.premium ?? 0, // Use ?? to allow premium = 0
         hubUser.balance ?? user.balance ?? 0, // Use ?? to allow balance = 0

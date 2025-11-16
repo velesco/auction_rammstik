@@ -20,6 +20,7 @@ function initDatabase() {
       discord_id TEXT,
       google_id TEXT,
       steam_id TEXT,
+      avatar TEXT,
       discord_avatar TEXT,
       google_avatar TEXT,
       is_admin BOOLEAN DEFAULT 0,
@@ -64,6 +65,13 @@ function initDatabase() {
   // Add vip_only column if it doesn't exist (migration)
   try {
     db.exec(`ALTER TABLE lots ADD COLUMN vip_only BOOLEAN DEFAULT 0`);
+  } catch (e) {
+    // Column already exists, ignore
+  }
+
+  // Add avatar column if it doesn't exist (migration)
+  try {
+    db.exec(`ALTER TABLE users ADD COLUMN avatar TEXT`);
   } catch (e) {
     // Column already exists, ignore
   }
@@ -125,13 +133,13 @@ export const userQueries = {
   findByHubId: db.prepare('SELECT * FROM users WHERE hub_user_id = ?'),
   findById: db.prepare('SELECT * FROM users WHERE id = ?'),
   create: db.prepare(`
-    INSERT INTO users (hub_user_id, username, email, discord_id, google_id, steam_id, discord_avatar, google_avatar, is_admin, premium, balance)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO users (hub_user_id, username, email, discord_id, google_id, steam_id, avatar, discord_avatar, google_avatar, is_admin, premium, balance)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `),
   update: db.prepare(`
     UPDATE users
     SET username = ?, email = ?, discord_id = ?, google_id = ?, steam_id = ?,
-        discord_avatar = ?, google_avatar = ?, is_admin = ?, premium = ?, balance = ?, updated_at = CURRENT_TIMESTAMP
+        avatar = ?, discord_avatar = ?, google_avatar = ?, is_admin = ?, premium = ?, balance = ?, updated_at = CURRENT_TIMESTAMP
     WHERE hub_user_id = ?
   `),
   getAll: db.prepare('SELECT * FROM users ORDER BY created_at DESC')

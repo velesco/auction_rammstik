@@ -61,7 +61,7 @@ function publicUser(user) {
   return {
     id: user.id,
     username: user.username,
-    avatar: user.discord_avatar || user.google_avatar,
+    avatar: user.avatar || user.discord_avatar || user.google_avatar,
     isAdmin: !!user.is_admin,
     premium: user.premium,
     balance: user.balance || 0
@@ -663,8 +663,8 @@ io.on('connection', (socket) => {
         return socket.emit('chatError', { reason: 'Лот не найден' });
       }
 
-      // Get user avatar - same logic as publicUser()
-      const avatar = socket.user.discord_avatar || socket.user.google_avatar || null;
+      // Get user avatar - prioritize generic avatar field
+      const avatar = socket.user.avatar || socket.user.discord_avatar || socket.user.google_avatar || null;
 
       // Save message to database
       const result = chatQueries.create.run(
