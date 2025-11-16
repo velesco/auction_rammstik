@@ -663,7 +663,7 @@ io.on('connection', (socket) => {
         return socket.emit('chatError', { reason: 'Лот не найден' });
       }
 
-      // Get user avatar
+      // Get user avatar - same logic as publicUser()
       const avatar = socket.user.discord_avatar || socket.user.google_avatar || null;
 
       // Save message to database
