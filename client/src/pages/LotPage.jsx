@@ -34,16 +34,38 @@ function LotPage() {
 
   // Timer
   useEffect(() => {
-    if (!lot || lot.status !== 'active') return;
+    if (!lot) return;
 
     const updateTimer = () => {
-      setTimeLeft(formatTimeRemaining(lot.endsAt));
+      if (lot.status === 'active') {
+        setTimeLeft(formatTimeRemaining(lot.endsAt));
+      } else if (lot.status === 'pending' && lot.startedAt) {
+        const now = Date.now();
+        const start = new Date(lot.startedAt).getTime();
+        const diff = start - now;
+
+        if (diff <= 0) {
+          setTimeLeft('Начинается...');
+        } else {
+          const hours = Math.floor(diff / (1000 * 60 * 60));
+          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+          if (hours > 0) {
+            setTimeLeft(`${hours}ч ${minutes}м ${seconds}с`);
+          } else if (minutes > 0) {
+            setTimeLeft(`${minutes}м ${seconds}с`);
+          } else {
+            setTimeLeft(`${seconds}с`);
+          }
+        }
+      }
     };
 
     updateTimer();
     const interval = setInterval(updateTimer, 250);
     return () => clearInterval(interval);
-  }, [lot?.endsAt, lot?.status]);
+  }, [lot?.endsAt, lot?.startedAt, lot?.status]);
 
   // Set initial bid amount
   useEffect(() => {
@@ -251,9 +273,20 @@ function LotPage() {
                   {statusLabels[lot.status]}
                 </span>
                 {lot.status === 'active' && timeLeft && (
-                  <span className="text-2xl font-mono font-bold text-green-400">
-                    {timeLeft}
-                  </span>
+                  <div className="text-center">
+                    <div className="text-xs text-slate-400 mb-1">Осталось</div>
+                    <span className="text-2xl font-mono font-bold text-green-400">
+                      {timeLeft}
+                    </span>
+                  </div>
+                )}
+                {lot.status === 'pending' && timeLeft && (
+                  <div className="text-center">
+                    <div className="text-xs text-slate-400 mb-1">Начало через</div>
+                    <span className="text-2xl font-mono font-bold text-yellow-400">
+                      {timeLeft}
+                    </span>
+                  </div>
                 )}
               </div>
 
