@@ -22,11 +22,11 @@ function LotCard({ lot, onClick }) {
 
   // Timer for pending lots with scheduled start
   useEffect(() => {
-    if (lot.status !== 'pending' || !lot.startedAt) return;
+    if (lot.status !== 'pending' || !lot.scheduledStart) return;
 
     const updateTimer = () => {
       const now = Date.now();
-      const start = new Date(lot.startedAt).getTime();
+      const start = new Date(lot.scheduledStart).getTime();
       const diff = start - now;
 
       if (diff <= 0) {
@@ -49,7 +49,7 @@ function LotCard({ lot, onClick }) {
     updateTimer();
     const interval = setInterval(updateTimer, 250);
     return () => clearInterval(interval);
-  }, [lot.startedAt, lot.status]);
+  }, [lot.scheduledStart, lot.status]);
 
   const statusColors = {
     active: 'bg-green-500',
@@ -88,7 +88,7 @@ function LotCard({ lot, onClick }) {
               {timeLeft}
             </span>
           )}
-          {lot.status === 'pending' && lot.startedAt && timeUntilStart && (
+          {lot.status === 'pending' && lot.scheduledStart && timeUntilStart && (
             <span className="text-sm font-mono text-yellow-400">
               {timeUntilStart}
             </span>

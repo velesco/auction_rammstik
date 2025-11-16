@@ -39,9 +39,9 @@ function LotPage() {
     const updateTimer = () => {
       if (lot.status === 'active') {
         setTimeLeft(formatTimeRemaining(lot.endsAt));
-      } else if (lot.status === 'pending' && lot.startedAt) {
+      } else if (lot.status === 'pending' && lot.scheduledStart) {
         const now = Date.now();
-        const start = new Date(lot.startedAt).getTime();
+        const start = new Date(lot.scheduledStart).getTime();
         const diff = start - now;
 
         if (diff <= 0) {
@@ -65,7 +65,7 @@ function LotPage() {
     updateTimer();
     const interval = setInterval(updateTimer, 250);
     return () => clearInterval(interval);
-  }, [lot?.endsAt, lot?.startedAt, lot?.status]);
+  }, [lot?.endsAt, lot?.scheduledStart, lot?.status]);
 
   // Set initial bid amount
   useEffect(() => {
