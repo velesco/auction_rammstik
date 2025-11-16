@@ -449,7 +449,8 @@ setInterval(async () => {
           discord_id: socket.user.discord_id || null,
           google_id: socket.user.google_id || null,
           steam_id: socket.user.steam_id || null,
-          discord_avatar: hubUser.avatar || socket.user.discord_avatar || null,
+          avatar: hubUser.avatar || socket.user.avatar || null, // Generic avatar from Hub
+          discord_avatar: socket.user.discord_avatar || null,
           google_avatar: socket.user.google_avatar || null,
           is_admin: (hubUser.isAdmin || hubUser.admin) ? 1 : 0, // Explicit 0/1 conversion
           premium: hubUser.premium ?? 0,
@@ -463,6 +464,7 @@ setInterval(async () => {
           updateParams.discord_id,
           updateParams.google_id,
           updateParams.steam_id,
+          updateParams.avatar,
           updateParams.discord_avatar,
           updateParams.google_avatar,
           updateParams.is_admin,
